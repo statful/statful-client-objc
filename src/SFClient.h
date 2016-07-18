@@ -47,7 +47,6 @@ FOUNDATION_EXTERN NSString const* SFClientUSER_AGENT;
 @property (strong, nonatomic) NSNumber *flushSize;
 @property (strong, nonatomic) NSString *host;
 @property (strong, nonatomic) NSString *port;
-@property (strong, nonatomic) NSString *prefix;
 @property (strong, nonatomic) NSNumber *sampleRate;
 @property (strong, nonatomic) NSNumber *secure;
 @property (strong, nonatomic) NSArray  *tags;

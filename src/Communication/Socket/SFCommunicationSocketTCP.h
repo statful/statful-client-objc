@@ -21,6 +21,12 @@
 //  THE SOFTWARE.
 //
 
+//
+// NOTE
+// This transport type is not supported at the momment.
+// However we have already developed the code to support it in the future.
+//
+
 #import "SFCommunicationSocket.h"
 
 NS_ASSUME_NONNULL_BEGIN

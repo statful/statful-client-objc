@@ -23,6 +23,8 @@
 
 // TO-DO
 // - Finish the tests
+// - Add configs per default
+// - Sanitize aggs
 // - Implemet dryrun
 // - Load user agent dynamically with client version (maybe from pod spec)
 // - Add the logger
@@ -97,7 +99,7 @@ NSString const* SFCLientDefaultNamespace = @"application";
 
 -(void)counterWithName:(NSString*)name value:(NSNumber*)value {
     
-    NSDictionary *defaultOptions = createDefaultOptions(nil, @[@"avg", @"p90", @"count_ps"], 10);
+    NSDictionary *defaultOptions = createDefaultOptions(nil, @[@"avg", @"p90"], 10);
     
     [self counterWithName:name value:value options:defaultOptions];
 }
@@ -118,7 +120,7 @@ NSString const* SFCLientDefaultNamespace = @"application";
 }
 
 -(void)timerWithName:(NSString*)name value:(NSNumber*)value {
-    NSDictionary *defaultOptions = createDefaultOptions(@{@"unit":@"ms"}, @[@"avg", @"p90", @"count", @"count_ps"], 10);
+    NSDictionary *defaultOptions = createDefaultOptions(@{@"unit":@"ms"}, @[@"avg", @"p90", @"count"], 10);
     
     [self timerWithName:name value:value options:defaultOptions];
 }
@@ -140,10 +142,10 @@ NSString const* SFCLientDefaultNamespace = @"application";
     
     for (NSString* key in aggs_in_dict) {
         NSString* value = [aggs_in_dict objectForKey:key];
-        [tags appendString:[NSString stringWithFormat:@"%@=%@,",key,value]];
+        [aggs appendString:[NSString stringWithFormat:@"%@=%@,",key,value]];
     }
     
-    NSString *metric = [NSString stringWithFormat:@"%@.%@.%@.%@%@ %@ %@ %@%@",_prefix, options[@"namespace"], type, name, tags, value, options[@"timestamp"], aggs, options[@"agg_freq"]];
+    NSString *metric = [NSString stringWithFormat:@"%@.%@.%@%@ %@ %@ %@%@", options[@"namespace"], type, name, tags, value, options[@"timestamp"], aggs, options[@"agg_freq"]];
     
     return metric;
 }
@@ -174,10 +176,10 @@ NSString const* SFCLientDefaultNamespace = @"application";
 }
 
 -(void)setTransport:(SFClientTransport)transport {
-    if (transport == SFClientTransportUDP || transport == SFClientTransportTCP || transport == SFClientTransportAPI) {
+    if (transport == SFClientTransportUDP || transport == SFClientTransportAPI) {
         _transport = transport;
     } else {
-        DDLogError(@"Transport must be SFClientTransportUDP, SFClientTransportTCP or SFClientTransportAPI.");
+        DDLogError(@"Transport must be SFClientTransportUDP or SFClientTransportAPI.");
     }
 }
 
@@ -192,11 +194,6 @@ NSString const* SFCLientDefaultNamespace = @"application";
     // Port
     [self setProperty:@"port" fromConfig:config withSetter:^(id value) {
         [blocksafeSelf setPort:value];
-    }];
-    
-    // Prefix
-    [self setProperty:@"prefix" fromConfig:config withSetter:^(id value) {
-        [blocksafeSelf setPrefix:value];
     }];
     
     // Transport

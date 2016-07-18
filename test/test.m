@@ -35,22 +35,21 @@
 - (void)setUp {
     [super setUp];
     
-    // Init default tel client
+    // Init default statful client
     _default_sfc = [[SFClient alloc]init];
     
-    // Custom tel client configuration
+    // Custom statful client configuration
     _sf_config = @{
-                   @"app": @"telemetron",
+                   @"app": @"statful",
                    @"dryrun" : [NSNumber numberWithBool:YES],
                    @"flush_size" : [NSNumber numberWithInt:12],
                    @"host" : @"123.456.789.123",
                    @"port" : @"123",
-                   @"prefix" : @"tel",
                    @"sample_rate" : [NSNumber numberWithInt:50],
                    @"secure" : [NSNumber numberWithBool:NO],
                    @"tags": @[@"tag_1", @"tag_2"],
                    @"timeout": [NSNumber numberWithInt:1000],
-                   @"token": @"tel-token",
+                   @"token": @"statful-token",
                    @"transport": [NSNumber numberWithInt:SFClientTransportUDP]
                    };
     
@@ -79,16 +78,15 @@
 }
 
 - (void)testCustomConstructor {
-    XCTAssertEqual(_sf_client.app, @"telemetron");
+    XCTAssertEqual(_sf_client.app, @"statful");
     XCTAssertEqual(_sf_client.dryrun, @YES);
     XCTAssertEqual(_sf_client.flushSize, @12);
     XCTAssertEqual(_sf_client.host, @"123.456.789.123");
     XCTAssertEqual(_sf_client.port, @"123");
-    XCTAssertEqual(_sf_client.prefix, @"tel");
     XCTAssertEqual(_sf_client.sampleRate, @50);
     XCTAssertEqual(_sf_client.secure, @NO);
     XCTAssertEqual(_sf_client.timeout, @1000);
-    XCTAssertEqual(_sf_client.token, @"tel-token");
+    XCTAssertEqual(_sf_client.token, @"statful-token");
     XCTAssertEqual(_sf_client.transport, SFClientTransportUDP);
     
     BOOL tags_arrays_compare_result = [_sf_client.tags isEqualToArray:@[@"tag_1", @"tag_2"]];

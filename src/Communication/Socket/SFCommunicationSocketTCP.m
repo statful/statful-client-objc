@@ -21,6 +21,12 @@
 //  THE SOFTWARE.
 //
 
+//
+// NOTE
+// This transport type is not supported at the momment.
+// However we have already developed the code to support it in the future.
+//
+
 #import "SFCommunicationSocketTCP.h"
 #import "SFCommunicationSocket+Private.h"
 
@@ -34,7 +40,7 @@
 
 @implementation SFCommunicationSocketTCP
 
-#pragma mark - SFCommunicationProtocol Methods
+//#pragma mark - SFCommunicationProtocol Methods
 
 - (instancetype)initWithDictionary:(NSDictionary *)dictionary {
 
