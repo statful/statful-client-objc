@@ -22,15 +22,15 @@
 //
 
 // TO-DO
-// - Finish the tests
-// - Add configs per default
-// - Sanitize aggs
-// - Implemet dryrun
+// - Add default configs per method
+// - Sanitize options (aggs, tags, etc)
+// - Decide what to do with logger (provide one on config or use one internal)
+// - Decide the need of log a message on every flush
 // - Load user agent dynamically with client version (maybe from pod spec)
-// - Add the logger
 // - Turn some variables private
 // - Define the static const variables on implementation with extern
 // - Configure the project for carthage too
+// - Finish the tests
 
 #import "SFClient.h"
 
@@ -269,12 +269,18 @@ NSString const* SFCLientDefaultNamespace = @"application";
 }
 
 -(void)flushMetrics:(NSString*)metrics {
-    NSData *metricsData = [metrics dataUsingEncoding:NSUTF8StringEncoding];
-    
-    [self.connection sendMetricsData:metricsData completionBlock:^(BOOL success, NSError *error) {
-        
-        DDLogDebug(@"Write something clever here.");
-    }];
+    if (self.dryrun) {
+        DDLogDebug(@"%@",metrics);
+    } else {
+        NSData *metricsData = [metrics dataUsingEncoding:NSUTF8StringEncoding];
+        [self.connection sendMetricsData:metricsData completionBlock:^(BOOL success, NSError *error) {
+            if (success) {
+                DDLogInfo(@"Metrics were flushed successfully.");
+            } else {
+                DDLogError(@"An error has happened during metrics flush: %@", error);
+            }
+        }];
+    }
 }
 
 FOUNDATION_STATIC_INLINE NSDictionary *defaultConfigs() {
