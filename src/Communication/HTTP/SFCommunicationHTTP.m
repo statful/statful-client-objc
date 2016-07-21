@@ -26,7 +26,7 @@
 #import <AFNetworking/AFHTTPRequestOperationManager.h>
 
 NSString* SFClientAPI_Path = @"/tel/v2.0/metrics";
-NSString* SFClientUSER_AGENT = @"statful-client-objc/0.0.1";
+NSString* SFClientUSER_AGENT = @"statful-client-objc";
 
 @interface SFCommunicationHTTP ()
 

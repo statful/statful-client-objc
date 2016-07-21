@@ -24,7 +24,6 @@
 // TO-DO
 // - Turn some variables private
 // - Define the static const variables on implementation with extern
-// - Load user agent dynamically with client version (maybe from pod spec)
 // - Add default configs per method
 // - Sanitize options (aggs, tags, etc)
 // - Review SFCommunicationHTTP.m, SFClient.m, SFClient.h
