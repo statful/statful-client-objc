@@ -22,8 +22,6 @@
 //
 
 // TO-DO
-// - Turn some variables private
-// - Define the static const variables on implementation with extern
 // - Add default configs per method
 // - Sanitize options (aggs, tags, etc)
 // - Finish the tests
