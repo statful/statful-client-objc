@@ -39,7 +39,7 @@ NSString* SFClientUSER_AGENT = @"statful-client-objc";
 
 #pragma mark - SFCommunicationProtocol Methods
 
-- (instancetype)initWithDictionary:(NSDictionary *)dictionary {
+- (instancetype)initWithDictionary:(NSDictionary *)dictionary completionBlock:(SFCommunicationCompletionBlock)completionBlock {
     
     if (self = [super init]) {
         
@@ -61,7 +61,6 @@ NSString* SFClientUSER_AGENT = @"statful-client-objc";
         });
         
         AFHTTPRequestOperationManager *manager = [[AFHTTPRequestOperationManager alloc] initWithBaseURL:baseURL];
-        // TODO: Should we use it only in DEBUG?
         manager.securityPolicy.allowInvalidCertificates = YES;
         manager.operationQueue = self.operationsQueue;
         
@@ -79,6 +78,8 @@ NSString* SFClientUSER_AGENT = @"statful-client-objc";
         manager.responseSerializer = responseSerializer;
         
         _manager = manager;
+        
+        completionBlock(YES, nil);
     }
     
     return self;
@@ -97,14 +98,12 @@ NSString* SFClientUSER_AGENT = @"statful-client-objc";
         [request setHTTPBody:postBody];
     }
     
+    completionBlock(YES, nil);
+    
     [self.manager HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
-        
-        // Do something with response
-        
+        completionBlock(YES, error);
     } failure:^(AFHTTPRequestOperation * _Nonnull operation, NSError * _Nonnull error) {
-        
-        // Do something with response
-        
+        completionBlock(NO, error);
     }];
 }
 

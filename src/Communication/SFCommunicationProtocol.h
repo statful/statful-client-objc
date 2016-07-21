@@ -22,14 +22,14 @@
 //
 
 @import Foundation;
+#import "SFLogger.h"
 
 typedef void(^SFCommunicationCompletionBlock)(BOOL success, NSError *error);
 
 @protocol SFCommunicationProtocol <NSObject>
 
 @required
-- (instancetype)initWithDictionary:(NSDictionary *)dictionary;
-
+- (instancetype)initWithDictionary:(NSDictionary *)dictionary completionBlock:(SFCommunicationCompletionBlock)completionBlock;
 - (void)sendMetricsData:(id)metricsData completionBlock:(SFCommunicationCompletionBlock)completionBlock;
 
 @end

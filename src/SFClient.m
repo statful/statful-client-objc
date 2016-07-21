@@ -37,8 +37,6 @@
 #import "SFCommunicationSocketTCP.h"
 #import "SFCommunicationSocketUDP.h"
 
-#import <CocoaLumberjack/CocoaLumberjack.h>
-
 NSString const* SFCLientDefaultNamespace = @"application";
 
 @interface SFClient ()
@@ -79,17 +77,37 @@ NSString const* SFCLientDefaultNamespace = @"application";
 
 - (void)initTransportLayer {
     NSDictionary *configs = @{@"host" : _host, @"port" : _port, @"timeout" : _timeout};
+    __block BOOL successInit = YES;
+    __block NSError* errorInit = nil;
     
     if (_transport == SFClientTransportTCP) {
-        _connection = [[SFCommunicationSocketTCP alloc] initWithDictionary:configs];
+        _connection = [[SFCommunicationSocketTCP alloc] initWithDictionary:configs completionBlock:^(BOOL success, NSError *error) {
+            
+            successInit = success;
+            errorInit = error;
+        }];
     } else if (_transport == SFClientTransportUDP) {
-        _connection = [[SFCommunicationSocketUDP alloc] initWithDictionary:configs];
+        _connection = [[SFCommunicationSocketUDP alloc] initWithDictionary:configs completionBlock:^(BOOL success, NSError *error) {
+            
+            successInit = success;
+            errorInit = error;
+        }];
     } else if (_transport == SFClientTransportAPI) {
         NSMutableDictionary *mutableConfigs = [configs mutableCopy];
         mutableConfigs[@"secure"] = _secure;
         mutableConfigs[@"token"] = _token;
 
-        _connection = [[SFCommunicationHTTP alloc] initWithDictionary:[mutableConfigs copy]];
+        _connection = [[SFCommunicationHTTP alloc] initWithDictionary:[mutableConfigs copy] completionBlock:^(BOOL success, NSError *error) {
+            
+            successInit = success;
+            errorInit = error;
+        }];
+    }
+    
+    if (successInit) {
+        [_logger logDebug:@"Success initing transport layer."];
+    } else {
+        [_logger logError:@"Error initing transport layer: %@", errorInit];
     }
 }
 
@@ -169,7 +187,7 @@ NSString const* SFCLientDefaultNamespace = @"application";
     if ([sampleRate intValue] > 0 && [sampleRate intValue] < 101) {
         _sampleRate = sampleRate;
     } else {
-        DDLogError(@"Sample rate must be in rage [1, 100].");
+        [_logger logError:@"Sample rate must be in rage [1, 100]."];
     }
 }
 
@@ -177,7 +195,7 @@ NSString const* SFCLientDefaultNamespace = @"application";
     if (transport == SFClientTransportUDP || transport == SFClientTransportAPI) {
         _transport = transport;
     } else {
-        DDLogError(@"Transport must be SFClientTransportUDP or SFClientTransportAPI.");
+        [_logger logError:@"Transport must be SFClientTransportUDP or SFClientTransportAPI."];
     }
 }
 
@@ -239,16 +257,9 @@ NSString const* SFCLientDefaultNamespace = @"application";
         [blocksafeSelf setFlushSize:value];
     }];
     
-    // Logger Level
-    [self setProperty:@"logger_level" fromConfig:config withSetter:^(id value) {
-        [blocksafeSelf setLoggerLevel:[((NSNumber*)value) intValue]];
-        ddLogLevel = (DDLogLevel)blocksafeSelf.loggerLevel;
-    }];
-    
     // Logger
     [self setProperty:@"logger" fromConfig:config withSetter:^(id value) {
-        [blocksafeSelf setLogger:value];
-        [DDLog addLogger:blocksafeSelf.logger withLevel:(DDLogLevel)blocksafeSelf.loggerLevel];
+        [blocksafeSelf setLogger:[[SFLogger alloc] initWithDDLoggerInstance:value loggerLevel:-1]];
     }];
     
     [self initTransportLayer];
@@ -262,7 +273,7 @@ NSString const* SFCLientDefaultNamespace = @"application";
     if (config[property] != nil) {
         setterFunction(config[property]);
     } else {
-        DDLogError(@"Property %@ doesn't exist on config.", property);
+        [_logger logError:@"Property %@ doesn't exist on config.", property];
         return NO;
     }
     return YES;
@@ -280,14 +291,14 @@ NSString const* SFCLientDefaultNamespace = @"application";
 
 -(void)flushMetrics:(NSString*)metrics {
     if (self.dryrun) {
-        DDLogDebug(@"%@",metrics);
+        [_logger logDebug:@"%@",metrics];
     } else {
         NSData *metricsData = [metrics dataUsingEncoding:NSUTF8StringEncoding];
         [self.connection sendMetricsData:metricsData completionBlock:^(BOOL success, NSError *error) {
             if (success) {
-                DDLogDebug(@"Metrics were flushed successfully.");
+                [_logger logDebug:@"Metrics were flushed successfully."];
             } else {
-                DDLogError(@"An error has happened during metrics flush: %@", error);
+                [_logger logError:@"An error has happened during metrics flush: %@", error];
             }
         }];
     }
@@ -304,7 +315,7 @@ FOUNDATION_STATIC_INLINE NSDictionary *defaultConfigs() {
              @"tags" : @[],
              @"sample_rate" : @100,
              @"flush_size" : @10,
-             @"logger_level" : @(SFClientLogLevelError)
+             @"logger" : [[SFLogger alloc] init]
     };
 }
 

@@ -22,22 +22,13 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import <CocoaLumberjack/CocoaLumberjack.h>
+#import "SFLogger.h"
 
 typedef NS_ENUM(short, SFClientTransport) {
     SFClientTransportTCP = 0,
     SFClientTransportUDP,
     SFClientTransportAPI,
 };
-
-typedef NS_ENUM(NSUInteger, SFClientLogLevel) {
-    SFClientLogLevelError = DDLogLevelError,
-    SFClientLogLevelDebug = DDLogLevelDebug,
-    SFClientLogLevelAll = DDLogLevelAll
-};
-
-static DDLogLevel ddLogLevel = DDLogLevelError;
 
 FOUNDATION_EXTERN NSString const* SFCLientDefaultNamespace;
 FOUNDATION_EXTERN NSString const* SFClientAPI_Path;
@@ -59,8 +50,7 @@ FOUNDATION_EXTERN NSString const* SFClientUSER_AGENT;
 @property (strong, nonatomic) NSNumber *timeout;
 @property (strong, nonatomic) NSString *token;
 @property (assign, nonatomic) SFClientTransport transport;
-@property (assign, nonatomic) SFClientLogLevel loggerLevel;
-@property (strong, nonatomic) NSObject <DDLogger> *logger;
+@property (strong, nonatomic) SFLogger *logger;
 
 #pragma mark - Convenience Initialisers
 

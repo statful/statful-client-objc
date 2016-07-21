@@ -36,14 +36,19 @@
 
 #pragma mark - SFCommunicationProtocol Methods
 
-- (instancetype)initWithDictionary:(NSDictionary *)dictionary {
+- (instancetype)initWithDictionary:(NSDictionary *)dictionary completionBlock:(SFCommunicationCompletionBlock)completionBlock {
     
-    if (self = [super initWithDictionary:dictionary]) {
+    if (self = [super initWithDictionary:dictionary completionBlock:completionBlock]) {
         
+        NSError *error = nil;
         _socket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:self.queue];
         
         // Accordingly with documentation, connectToHost will return right away, so we don't need to provide an error. However, we should listen the delegate methods
-        [_socket connectToHost:self.host onPort:self.port error:nil];
+        if(![_socket connectToHost:self.host onPort:self.port error:&error]) {
+            completionBlock(NO, error);
+        } else {
+            completionBlock(YES, nil);
+        }
     }
     
     return self;
@@ -52,6 +57,7 @@
 - (void)sendMetricsData:(id)metricsData completionBlock:(SFCommunicationCompletionBlock)completionBlock {
     
     [self.socket sendData:metricsData withTimeout:self.timeout tag:0];
+    completionBlock(YES, nil);
 }
 
 @end

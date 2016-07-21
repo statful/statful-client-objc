@@ -21,13 +21,35 @@
 //  THE SOFTWARE.
 //
 
-#import "SFCommunicationSocket.h"
+#import <Foundation/Foundation.h>
+#import <CocoaLumberjack/CocoaLumberjack.h>
 
-@interface SFCommunicationSocket ()
+typedef NS_ENUM(NSUInteger, SFLoggerLogLevel) {
+    SFLoggerLogLevelError = DDLogLevelError,
+    SFLoggerLogLevelDebug = DDLogLevelDebug,
+    SFLoggerLogLevelVerbose = DDLogLevelVerbose
+};
 
-@property (nonatomic, strong) NSString *host;
-@property (nonatomic, assign) NSUInteger port;
-@property (nonatomic, assign) NSTimeInterval timeout;
-@property (nonatomic, strong) dispatch_queue_t queue;
+static DDLogLevel ddLogLevel = (DDLogLevel)SFLoggerLogLevelError;
+
+@interface SFLogger : NSObject
+
+#pragma mark - Properties
+
+// Config properties
+@property (assign, nonatomic) SFLoggerLogLevel loggerLevel;
+@property (strong, nonatomic) DDAbstractLogger <DDLogger> *logger;
+
+#pragma mark - Convenience Initialisers
+
++(instancetype)loggerWithDDLoggerInstance:(NSObject<DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel;
+
+- (instancetype)initWithDDLoggerInstance:(NSObject <DDLogger>*)logger loggerLevel:(SFLoggerLogLevel)loggerLevel NS_DESIGNATED_INITIALIZER;
+
+#pragma mark - Public Methods
+
+-(void)logError:(id)format, ...;
+-(void)logDebug:(id)format, ...;
+-(void)logVerbose:(id)format, ...;
 
 @end

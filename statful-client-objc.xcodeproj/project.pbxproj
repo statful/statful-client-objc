@@ -17,6 +17,8 @@
 		1BBC40931BD9A7FF00D1EB21 /* SFCommunicationHTTP.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BBC40911BD9A7FF00D1EB21 /* SFCommunicationHTTP.m */; };
 		4B3919711BD790E000BA4742 /* libAFNetworking.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B3919701BD790E000BA4742 /* libAFNetworking.a */; };
 		4B3919721BD790E700BA4742 /* libAFNetworking.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B3919701BD790E000BA4742 /* libAFNetworking.a */; };
+		4B45CAAB1D411A7E00960376 /* SFLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B45CAAA1D411A7E00960376 /* SFLogger.m */; };
+		4B45CAAC1D411A7E00960376 /* SFLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B45CAAA1D411A7E00960376 /* SFLogger.m */; };
 		4BA0B6B91BD69AB90014CFFE /* libCocoaLumberjack.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BA0B6B81BD69AB90014CFFE /* libCocoaLumberjack.a */; };
 		4BA0B6BA1BD69AC00014CFFE /* libCocoaLumberjack.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BA0B6B81BD69AB90014CFFE /* libCocoaLumberjack.a */; };
 		4BA0B6CF1BD69D080014CFFE /* SFClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BA0B6CE1BD69D080014CFFE /* SFClient.m */; };
@@ -96,6 +98,8 @@
 		1BBC40911BD9A7FF00D1EB21 /* SFCommunicationHTTP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SFCommunicationHTTP.m; sourceTree = "<group>"; };
 		454533AE49614E8FA1210C4D /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		4B3919701BD790E000BA4742 /* libAFNetworking.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libAFNetworking.a; path = "../../Library/Developer/Xcode/DerivedData/telemetron-client-objc-auylwuijfpzcwcexabokuhvlahjn/Build/Products/Debug/libAFNetworking.a"; sourceTree = "<group>"; };
+		4B45CAA91D411A7E00960376 /* SFLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SFLogger.h; sourceTree = "<group>"; };
+		4B45CAAA1D411A7E00960376 /* SFLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SFLogger.m; sourceTree = "<group>"; };
 		4B49293D1D3CF4AC0032DCC0 /* Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Pods.xcodeproj; path = Pods/Pods.xcodeproj; sourceTree = "<group>"; };
 		4BA0B6B81BD69AB90014CFFE /* libCocoaLumberjack.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libCocoaLumberjack.a; path = "../../Library/Developer/Xcode/DerivedData/algoliasearch-client-objc-bmbwogtemytzttevbkczamvnptyn/Build/Products/Debug/libCocoaLumberjack.a"; sourceTree = "<group>"; };
 		4BA0B6CD1BD69D080014CFFE /* SFClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SFClient.h; sourceTree = "<group>"; };
@@ -185,6 +189,15 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		4B45CAA81D411A7E00960376 /* Logger */ = {
+			isa = PBXGroup;
+			children = (
+				4B45CAA91D411A7E00960376 /* SFLogger.h */,
+				4B45CAAA1D411A7E00960376 /* SFLogger.m */,
+			);
+			path = Logger;
+			sourceTree = "<group>";
+		};
 		4B49293E1D3CF4AC0032DCC0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -250,6 +263,7 @@
 		591C935C18E267B5001F1A0F /* src */ = {
 			isa = PBXGroup;
 			children = (
+				4B45CAA81D411A7E00960376 /* Logger */,
 				1BBC40701BD9917400D1EB21 /* Communication */,
 				4BA0B6CD1BD69D080014CFFE /* SFClient.h */,
 				4BA0B6CE1BD69D080014CFFE /* SFClient.m */,
@@ -448,6 +462,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4BA0B6D01BD69D080014CFFE /* SFClient.m in Sources */,
+				4B45CAAC1D411A7E00960376 /* SFLogger.m in Sources */,
 				1BBC40931BD9A7FF00D1EB21 /* SFCommunicationHTTP.m in Sources */,
 				590677D218E4E38B00D2B893 /* test.m in Sources */,
 				1BBC40861BD9A66D00D1EB21 /* SFCommunicationSocketTCP.m in Sources */,
@@ -460,6 +475,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B45CAAB1D411A7E00960376 /* SFLogger.m in Sources */,
 				1BBC40851BD9A66D00D1EB21 /* SFCommunicationSocketTCP.m in Sources */,
 				4BA0B6CF1BD69D080014CFFE /* SFClient.m in Sources */,
 				1BBC407D1BD9A4CE00D1EB21 /* SFCommunicationSocket.m in Sources */,
