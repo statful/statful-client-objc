@@ -21,15 +21,12 @@
 //  THE SOFTWARE.
 //
 
-#import <Foundation/Foundation.h>
-#import "SFCommunicationProtocol.h"
+#include "SFConstants.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation SFConstants
 
-@interface SFCommunicationHTTP : NSObject <SFCommunicationProtocol>
-
-- (instancetype)init NS_UNAVAILABLE;
+NSString* const kApiPath = @"/tel/v2.0/metrics";
+NSString* const kDefaultNamespace = @"application";
+NSString* const kUserAgent = @"statful-client-objc";
 
 @end
-
-NS_ASSUME_NONNULL_END

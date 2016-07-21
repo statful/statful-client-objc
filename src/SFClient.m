@@ -26,9 +26,8 @@
 // - Define the static const variables on implementation with extern
 // - Add default configs per method
 // - Sanitize options (aggs, tags, etc)
-// - Review SFCommunicationHTTP.m, SFClient.m, SFClient.h
-// - Configure the project for carthage too
 // - Finish the tests
+// - Configure the project for carthage too
 
 #import "SFClient.h"
 
@@ -36,14 +35,24 @@
 #import "SFCommunicationHTTP.h"
 #import "SFCommunicationSocketTCP.h"
 #import "SFCommunicationSocketUDP.h"
-
-NSString const* SFCLientDefaultNamespace = @"application";
+#import "SFConstants.h"
 
 @interface SFClient ()
 
 // Implementation related properties
 @property (strong, nonatomic) id<SFCommunicationProtocol> connection;
 @property (strong, nonatomic) NSMutableArray *metricsBuffer;
+@property (strong, nonatomic) NSString *app;
+@property (strong, nonatomic) NSNumber *dryrun;
+@property (strong, nonatomic) NSNumber *flushSize;
+@property (strong, nonatomic) NSString *host;
+@property (strong, nonatomic) NSString *port;
+@property (strong, nonatomic) NSNumber *sampleRate;
+@property (strong, nonatomic) NSNumber *secure;
+@property (strong, nonatomic) NSArray  *tags;
+@property (strong, nonatomic) NSNumber *timeout;
+@property (strong, nonatomic) NSString *token;
+@property (assign, nonatomic) SFClientTransport transport;
 
 @end
 
@@ -67,7 +76,6 @@ NSString const* SFCLientDefaultNamespace = @"application";
             return nil;
         }
     }
-    
     return self;
 }
 
@@ -107,7 +115,7 @@ NSString const* SFCLientDefaultNamespace = @"application";
     if (successInit) {
         [_logger logDebug:@"Success initing transport layer."];
     } else {
-        [_logger logError:@"Error initing transport layer: %@", errorInit];
+        [_logger logError:@"Error initing transport layer: %@.", errorInit];
     }
 }
 
@@ -298,7 +306,7 @@ NSString const* SFCLientDefaultNamespace = @"application";
             if (success) {
                 [_logger logDebug:@"Metrics were flushed successfully."];
             } else {
-                [_logger logError:@"An error has happened during metrics flush: %@", error];
+                [_logger logError:@"An error has happened during metrics flush: %@.", error];
             }
         }];
     }
@@ -324,7 +332,7 @@ FOUNDATION_STATIC_INLINE NSDictionary *createDefaultOptions(NSDictionary *tags, 
              @"tags" : tags ?: @{},
              @"agg": aggs ?: @[],
              @"agg_freq": @(aggFreq),
-             @"namespace": SFCLientDefaultNamespace,
+             @"namespace": kDefaultNamespace,
              @"timestamp": @([[NSDate date]timeIntervalSince1970])
              };
 }

@@ -22,13 +22,29 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SFCommunicationProtocol.h"
+#import <CocoaLumberjack/CocoaLumberjack.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SFCommunicationHTTP : NSObject <SFCommunicationProtocol>
+@class NSString;
 
-- (instancetype)init NS_UNAVAILABLE;
+@interface SFConstants : NSObject
+
+FOUNDATION_EXTERN NSString* const kApiPath;
+FOUNDATION_EXTERN NSString* const kDefaultNamespace;
+FOUNDATION_EXTERN NSString* const kUserAgent;
+
+typedef NS_ENUM(short, SFClientTransport) {
+    SFClientTransportTCP = 0,
+    SFClientTransportUDP,
+    SFClientTransportAPI,
+};
+
+typedef NS_ENUM(NSUInteger, SFLoggerLogLevel) {
+    SFLoggerLogLevelError = DDLogLevelError,
+    SFLoggerLogLevelDebug = DDLogLevelDebug,
+    SFLoggerLogLevelVerbose = DDLogLevelVerbose
+};
 
 @end
 

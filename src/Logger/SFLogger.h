@@ -23,28 +23,17 @@
 
 #import <Foundation/Foundation.h>
 #import <CocoaLumberjack/CocoaLumberjack.h>
-
-typedef NS_ENUM(NSUInteger, SFLoggerLogLevel) {
-    SFLoggerLogLevelError = DDLogLevelError,
-    SFLoggerLogLevelDebug = DDLogLevelDebug,
-    SFLoggerLogLevelVerbose = DDLogLevelVerbose
-};
-
-static DDLogLevel ddLogLevel = (DDLogLevel)SFLoggerLogLevelError;
+#import "SFConstants.h"
 
 @interface SFLogger : NSObject
 
 #pragma mark - Properties
-
-// Config properties
 @property (assign, nonatomic) SFLoggerLogLevel loggerLevel;
 @property (strong, nonatomic) DDAbstractLogger <DDLogger> *logger;
 
 #pragma mark - Convenience Initialisers
-
-+(instancetype)loggerWithDDLoggerInstance:(NSObject<DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel;
-
-- (instancetype)initWithDDLoggerInstance:(NSObject <DDLogger>*)logger loggerLevel:(SFLoggerLogLevel)loggerLevel NS_DESIGNATED_INITIALIZER;
++(instancetype)loggerWithDDLoggerInstance:(DDAbstractLogger <DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel;
+- (instancetype)initWithDDLoggerInstance:(DDAbstractLogger <DDLogger>*)logger loggerLevel:(SFLoggerLogLevel)loggerLevel NS_DESIGNATED_INITIALIZER;
 
 #pragma mark - Public Methods
 

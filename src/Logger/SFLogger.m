@@ -32,23 +32,26 @@
 
 #import "SFLogger.h"
 
+static DDLogLevel ddLogLevel = (DDLogLevel)SFLoggerLogLevelError;
 
 @implementation SFLogger
 
 #pragma mark - Convenience Initialisers
 
-+(instancetype)loggerWithDDLoggerInstance:(NSObject<DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel {
++(instancetype)loggerWithDDLoggerInstance:(DDAbstractLogger <DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel {
     
     return [[[self class] alloc] initWithDDLoggerInstance:logger loggerLevel:loggerLevel];
 }
 
-- (instancetype)initWithDDLoggerInstance:(NSObject<DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel {
+- (instancetype)initWithDDLoggerInstance:(DDAbstractLogger <DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel {
     
     if (self = [super init]) {
         if (loggerLevel > SFLoggerLogLevelError && loggerLevel < SFLoggerLogLevelVerbose) {
+            _loggerLevel = loggerLevel;
             ddLogLevel = (DDLogLevel)loggerLevel;
         }
         if (logger) {
+            _logger = logger;
             [DDLog addLogger:logger withLevel:(DDLogLevel)loggerLevel];
         }
     }

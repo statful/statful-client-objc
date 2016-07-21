@@ -22,11 +22,8 @@
 //
 
 #import "SFCommunicationHTTP.h"
-
 #import <AFNetworking/AFHTTPRequestOperationManager.h>
-
-NSString* SFClientAPI_Path = @"/tel/v2.0/metrics";
-NSString* SFClientUSER_AGENT = @"statful-client-objc";
+#import "SFConstants.h"
 
 @interface SFCommunicationHTTP ()
 
@@ -65,7 +62,7 @@ NSString* SFClientUSER_AGENT = @"statful-client-objc";
         manager.operationQueue = self.operationsQueue;
         
         AFHTTPRequestSerializer *requestSerializer = [AFHTTPRequestSerializer serializer];
-        [requestSerializer setValue:SFClientUSER_AGENT forHTTPHeaderField:@"User-Agent"];
+        [requestSerializer setValue:kUserAgent forHTTPHeaderField:@"User-Agent"];
         [requestSerializer setValue:dictionary[@"token"] forHTTPHeaderField:@"M-Api-Token"];
         [requestSerializer setValue:@"application/text" forHTTPHeaderField:@"content-type"];
         requestSerializer.timeoutInterval = [dictionary[@"timeout"] doubleValue];
@@ -88,7 +85,7 @@ NSString* SFClientUSER_AGENT = @"statful-client-objc";
 - (void)sendMetricsData:(id)metricsData completionBlock:(SFCommunicationCompletionBlock)completionBlock {
     NSError *error = nil;
     
-    NSMutableURLRequest *request = [self.manager.requestSerializer requestWithMethod:@"PUT" URLString:SFClientAPI_Path parameters:nil error:&error];
+    NSMutableURLRequest *request = [self.manager.requestSerializer requestWithMethod:@"PUT" URLString:kApiPath parameters:nil error:&error];
     
     if (request) {
         
