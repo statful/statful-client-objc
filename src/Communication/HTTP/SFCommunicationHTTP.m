@@ -41,6 +41,19 @@ NSString* SFClientUSER_AGENT = @"statful-client-objc/0.0.1";
 
 - (instancetype)initWithDictionary:(NSDictionary *)dictionary {
     
+    NSString *filepath = [[NSBundle mainBundle] pathForResource:@"Statful-Client" ofType:@"podspec"];
+    NSError *error;
+    NSString *fileContents = [NSString stringWithContentsOfFile:filepath encoding:NSUTF8StringEncoding error:&error];
+    
+    if (error)
+        NSLog(@"Error reading file: %@", error.localizedDescription);
+    
+    // maybe for debugging...
+    NSLog(@"contents: %@", fileContents);
+    
+    NSArray *listArray = [fileContents componentsSeparatedByString:@"\n"];
+    NSLog(@"items = %lu", (unsigned long)[listArray count]);
+    
     if (self = [super init]) {
         
         _operationsQueue = [[NSOperationQueue alloc] init];

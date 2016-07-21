@@ -31,7 +31,13 @@ typedef NS_ENUM(short, SFClientTransport) {
     SFClientTransportAPI,
 };
 
-static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
+typedef NS_ENUM(NSUInteger, SFClientLogLevel) {
+    SFClientLogLevelError = DDLogLevelError,
+    SFClientLogLevelDebug = DDLogLevelDebug,
+    SFClientLogLevelAll = DDLogLevelAll
+};
+
+static DDLogLevel ddLogLevel = DDLogLevelError;
 
 FOUNDATION_EXTERN NSString const* SFCLientDefaultNamespace;
 FOUNDATION_EXTERN NSString const* SFClientAPI_Path;
@@ -53,6 +59,8 @@ FOUNDATION_EXTERN NSString const* SFClientUSER_AGENT;
 @property (strong, nonatomic) NSNumber *timeout;
 @property (strong, nonatomic) NSString *token;
 @property (assign, nonatomic) SFClientTransport transport;
+@property (assign, nonatomic) SFClientLogLevel loggerLevel;
+@property (strong, nonatomic) NSObject <DDLogger> *logger;
 
 #pragma mark - Convenience Initialisers
 

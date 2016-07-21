@@ -32,7 +32,7 @@
     
     if (self = [super init]) {
         _host = dictionary[@"host"];
-        _port = [dictionary[@"port"] unsignedIntegerValue];
+        _port = [dictionary[@"port"] integerValue];
         _timeout = [dictionary[@"timeout"] unsignedIntegerValue];
         
         _queue = dispatch_queue_create([NSStringFromClass([self class]) UTF8String], DISPATCH_QUEUE_SERIAL);

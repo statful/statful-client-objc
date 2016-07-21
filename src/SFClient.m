@@ -22,13 +22,12 @@
 //
 
 // TO-DO
-// - Add default configs per method
-// - Sanitize options (aggs, tags, etc)
-// - Decide what to do with logger (provide one on config or use one internal)
-// - Decide the need of log a message on every flush
-// - Load user agent dynamically with client version (maybe from pod spec)
 // - Turn some variables private
 // - Define the static const variables on implementation with extern
+// - Load user agent dynamically with client version (maybe from pod spec)
+// - Add default configs per method
+// - Sanitize options (aggs, tags, etc)
+// - Review SFCommunicationHTTP.m, SFClient.m, SFClient.h
 // - Configure the project for carthage too
 // - Finish the tests
 
@@ -241,6 +240,18 @@ NSString const* SFCLientDefaultNamespace = @"application";
         [blocksafeSelf setFlushSize:value];
     }];
     
+    // Logger Level
+    [self setProperty:@"logger_level" fromConfig:config withSetter:^(id value) {
+        [blocksafeSelf setLoggerLevel:[((NSNumber*)value) intValue]];
+        ddLogLevel = (DDLogLevel)blocksafeSelf.loggerLevel;
+    }];
+    
+    // Logger
+    [self setProperty:@"logger" fromConfig:config withSetter:^(id value) {
+        [blocksafeSelf setLogger:value];
+        [DDLog addLogger:blocksafeSelf.logger withLevel:(DDLogLevel)blocksafeSelf.loggerLevel];
+    }];
+    
     [self initTransportLayer];
     
     return YES;
@@ -275,7 +286,7 @@ NSString const* SFCLientDefaultNamespace = @"application";
         NSData *metricsData = [metrics dataUsingEncoding:NSUTF8StringEncoding];
         [self.connection sendMetricsData:metricsData completionBlock:^(BOOL success, NSError *error) {
             if (success) {
-                DDLogInfo(@"Metrics were flushed successfully.");
+                DDLogDebug(@"Metrics were flushed successfully.");
             } else {
                 DDLogError(@"An error has happened during metrics flush: %@", error);
             }
@@ -293,7 +304,8 @@ FOUNDATION_STATIC_INLINE NSDictionary *defaultConfigs() {
              @"dryrun" : @NO,
              @"tags" : @[],
              @"sample_rate" : @100,
-             @"flush_size" : @10
+             @"flush_size" : @10,
+             @"logger_level" : @(SFClientLogLevelError)
     };
 }
 
