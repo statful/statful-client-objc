@@ -50,7 +50,7 @@
                    @"tags": @[@"tag_1", @"tag_2"],
                    @"timeout": [NSNumber numberWithInt:1000],
                    @"token": @"statful-token",
-                   @"transport": [NSNumber numberWithInt:SFClientTransportAPI]
+                   @"transport": [NSNumber numberWithInt:SFClientTransportUDP]
                    };
     
     _sf_client = [SFClient clientWithConfig:_sf_config];
@@ -62,7 +62,8 @@
 }
 
 - (void)testBuiltClass {
-    XCTAssertTrue(true);
+    XCTAssertTrue([_default_sfc isKindOfClass:[SFClient class]]);
+    XCTAssertTrue([_sf_client isKindOfClass:[SFClient class]]);
 }
 
 - (void)testDefaultConstructor {

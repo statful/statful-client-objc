@@ -23,7 +23,6 @@
 		4BA0B6D01BD69D080014CFFE /* SFClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BA0B6CE1BD69D080014CFFE /* SFClient.m */; };
 		4BA0B6D21BD69E9A0014CFFE /* libCocoaAsyncSocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BA0B6D11BD69E9A0014CFFE /* libCocoaAsyncSocket.a */; };
 		4BA0B6D31BD69EBB0014CFFE /* libCocoaAsyncSocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BA0B6D11BD69E9A0014CFFE /* libCocoaAsyncSocket.a */; };
-		590677CA18E4E38B00D2B893 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 591C934418E265C3001F1A0F /* XCTest.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		590677D018E4E38B00D2B893 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 590677CE18E4E38B00D2B893 /* InfoPlist.strings */; };
 		590677D218E4E38B00D2B893 /* test.m in Sources */ = {isa = PBXBuildFile; fileRef = 590677D118E4E38B00D2B893 /* test.m */; };
 		5909919A19EFB7FE003DA269 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 599EA22619ED664700FEF7E7 /* AppKit.framework */; };
@@ -106,10 +105,8 @@
 		590677CD18E4E38B00D2B893 /* test-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "test-Info.plist"; sourceTree = "<group>"; };
 		590677CF18E4E38B00D2B893 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		590677D118E4E38B00D2B893 /* test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = test.m; sourceTree = "<group>"; };
-		590677D318E4E38C00D2B893 /* test-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "test-Prefix.pch"; sourceTree = "<group>"; };
 		591C933318E265C3001F1A0F /* libstatful-client-objc.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libstatful-client-objc.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		591C933618E265C3001F1A0F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		591C934418E265C3001F1A0F /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		599EA22619ED664700FEF7E7 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		93A3C6D5C4BEC322D8180EA7 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		EE723D9FA715B3A80A9DBE58 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
@@ -126,7 +123,6 @@
 				5909919C19EFB827003DA269 /* libPods.a in Frameworks */,
 				5909919A19EFB7FE003DA269 /* AppKit.framework in Frameworks */,
 				592EEA9118E4F14200891427 /* libstatful-client-objc.a in Frameworks */,
-				590677CA18E4E38B00D2B893 /* XCTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -214,7 +210,6 @@
 			children = (
 				590677CD18E4E38B00D2B893 /* test-Info.plist */,
 				590677CE18E4E38B00D2B893 /* InfoPlist.strings */,
-				590677D318E4E38C00D2B893 /* test-Prefix.pch */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -247,7 +242,6 @@
 				4BA0B6B81BD69AB90014CFFE /* libCocoaLumberjack.a */,
 				599EA22619ED664700FEF7E7 /* AppKit.framework */,
 				591C933618E265C3001F1A0F /* Foundation.framework */,
-				591C934418E265C3001F1A0F /* XCTest.framework */,
 				454533AE49614E8FA1210C4D /* libPods.a */,
 			);
 			name = Frameworks;
