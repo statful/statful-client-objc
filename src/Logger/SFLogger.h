@@ -36,7 +36,6 @@
 - (instancetype)initWithDDLoggerInstance:(DDAbstractLogger <DDLogger>*)logger loggerLevel:(SFLoggerLogLevel)loggerLevel NS_DESIGNATED_INITIALIZER;
 
 #pragma mark - Public Methods
-
 -(void)logError:(id)format, ...;
 -(void)logDebug:(id)format, ...;
 -(void)logVerbose:(id)format, ...;

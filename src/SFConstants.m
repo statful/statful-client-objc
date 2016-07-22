@@ -24,9 +24,18 @@
 #include "SFConstants.h"
 
 @implementation SFConstants
-
+//Primitive Types
 NSString* const kApiPath = @"/tel/v2.0/metrics";
 NSString* const kDefaultNamespace = @"application";
 NSString* const kUserAgent = @"statful-client-objc";
+
+//OBJ-C Objects
+NSNumber*  kDefaultAggFreq;
+
+//Function to init object constants
+void __attribute__((constructor)) initializeConstants()
+{
+    kDefaultAggFreq = @10;
+}
 
 @end

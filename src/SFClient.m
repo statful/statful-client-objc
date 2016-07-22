@@ -52,6 +52,7 @@
 @property (strong, nonatomic) NSString *token;
 @property (assign, nonatomic) SFClientTransport transport;
 @property (strong, nonatomic) NSString *namespace;
+@property (strong, nonatomic) NSDictionary *defaults;
 
 @end
 
@@ -274,6 +275,11 @@
         [blocksafeSelf setNamespace:value];
     }];
     
+    // Defaults
+    [self setProperty:@"defaults" fromConfig:config withSetter:^(id value) {
+        [blocksafeSelf setDefaults:value];
+    }];
+    
     [self initTransportLayer];
     
     return YES;
@@ -327,18 +333,20 @@ FOUNDATION_STATIC_INLINE NSDictionary *defaultConfigs() {
              @"tags" : @[],
              @"sample_rate" : @100,
              @"flush_size" : @10,
-             @"logger" : [[SFLogger alloc] init]
+             @"logger" : [DDTTYLogger sharedInstance]
     };
 }
 
 FOUNDATION_STATIC_INLINE NSDictionary *createDefaultOptions(NSDictionary *tags, NSArray *aggs, NSNumber* aggFreq, NSString* namespace) {
+    
+    NSLog(@"%@", kDefaultAggFreq);
     return @{
              @"tags" : tags ?: @{},
              @"agg": aggs ?: @[],
-             @"agg_freq": aggFreq ? aggFreq : @10,
+             @"agg_freq": kDefaultAggFreq ? kDefaultAggFreq : @10,
              @"namespace": namespace ?: kDefaultNamespace,
              @"timestamp": @([[NSDate date]timeIntervalSince1970])
-             };
+    };
 }
 
 @end

@@ -468,12 +468,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				4BA0B6D01BD69D080014CFFE /* SFClient.m in Sources */,
+				4B45CAB01D41698300960376 /* SFConstants.m in Sources */,
 				4B45CAAC1D411A7E00960376 /* SFLogger.m in Sources */,
 				1BBC40931BD9A7FF00D1EB21 /* SFCommunicationHTTP.m in Sources */,
 				590677D218E4E38B00D2B893 /* test.m in Sources */,
 				1BBC40861BD9A66D00D1EB21 /* SFCommunicationSocketTCP.m in Sources */,
 				1BBC407E1BD9A4CE00D1EB21 /* SFCommunicationSocket.m in Sources */,
-				4B45CAB01D41698300960376 /* SFConstants.m in Sources */,
 				1BBC408A1BD9A75B00D1EB21 /* SFCommunicationSocketUDP.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

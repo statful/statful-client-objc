@@ -49,10 +49,16 @@ static DDLogLevel ddLogLevel = (DDLogLevel)SFLoggerLogLevelError;
         if (loggerLevel > SFLoggerLogLevelError && loggerLevel < SFLoggerLogLevelVerbose) {
             _loggerLevel = loggerLevel;
             ddLogLevel = (DDLogLevel)loggerLevel;
+        } else {
+            _loggerLevel = SFLoggerLogLevelError;
+            ddLogLevel = (DDLogLevel)SFLoggerLogLevelError;
         }
         if (logger) {
             _logger = logger;
             [DDLog addLogger:logger withLevel:(DDLogLevel)loggerLevel];
+        } else {
+            _logger = [DDTTYLogger sharedInstance];
+            [DDLog addLogger:[DDTTYLogger sharedInstance]];
         }
     }
     
@@ -68,21 +74,21 @@ static DDLogLevel ddLogLevel = (DDLogLevel)SFLoggerLogLevelError;
 -(void)logError:(id)format, ... {
     va_list args;
     va_start(args, format);
-    DDLogError(format, args);
+    DDLogError(@"%@", [[NSString alloc] initWithFormat:format arguments:args]);
     va_end(args);
 }
 
 -(void)logDebug:(id)format, ... {
     va_list args;
     va_start(args, format);
-    DDLogDebug(format, args);
+    DDLogDebug(@"%@", [[NSString alloc] initWithFormat:format arguments:args]);
     va_end(args);
 }
 
 -(void)logVerbose:(id)format, ... {
     va_list args;
     va_start(args, format);
-    DDLogVerbose(format, args);
+    DDLogVerbose(@"%@", [[NSString alloc] initWithFormat:format arguments:args]);
     va_end(args);
 }
 

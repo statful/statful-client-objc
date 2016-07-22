@@ -26,10 +26,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class NSString;
-
 @interface SFConstants : NSObject
 
+//Primitive Types
 FOUNDATION_EXTERN NSString* const kApiPath;
 FOUNDATION_EXTERN NSString* const kDefaultNamespace;
 FOUNDATION_EXTERN NSString* const kUserAgent;
@@ -45,6 +44,9 @@ typedef NS_ENUM(NSUInteger, SFLoggerLogLevel) {
     SFLoggerLogLevelDebug = DDLogLevelDebug,
     SFLoggerLogLevelVerbose = DDLogLevelVerbose
 };
+
+//OBJ-C Objects
+FOUNDATION_EXTERN NSNumber* kDefaultAggFreq;
 
 @end
 
