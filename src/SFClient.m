@@ -51,6 +51,7 @@
 @property (strong, nonatomic) NSNumber *timeout;
 @property (strong, nonatomic) NSString *token;
 @property (assign, nonatomic) SFClientTransport transport;
+@property (strong, nonatomic) NSString *namespace;
 
 @end
 
@@ -121,7 +122,7 @@
 
 -(void)counterWithName:(NSString*)name value:(NSNumber*)value {
     
-    NSDictionary *defaultOptions = createDefaultOptions(nil, @[@"avg", @"p90"], 10);
+    NSDictionary *defaultOptions = createDefaultOptions(nil, @[@"avg", @"p90"], @10, _namespace);
     
     [self counterWithName:name value:value options:defaultOptions];
 }
@@ -132,7 +133,7 @@
 
 -(void)gaugeWithName:(NSString*)name value:(NSNumber*)value {
     
-    NSDictionary *defaultOptions = createDefaultOptions(nil, @[@"last"], 10);
+    NSDictionary *defaultOptions = createDefaultOptions(nil, @[@"last"], @10, _namespace);
 
     [self gaugeWithName:name value:value options:defaultOptions];
 }
@@ -142,7 +143,7 @@
 }
 
 -(void)timerWithName:(NSString*)name value:(NSNumber*)value {
-    NSDictionary *defaultOptions = createDefaultOptions(@{@"unit":@"ms"}, @[@"avg", @"p90", @"count"], 10);
+    NSDictionary *defaultOptions = createDefaultOptions(@{@"unit":@"ms"}, @[@"avg", @"p90", @"count"], @10, _namespace);
     
     [self timerWithName:name value:value options:defaultOptions];
 }
@@ -268,6 +269,11 @@
         [blocksafeSelf setLogger:[[SFLogger alloc] initWithDDLoggerInstance:value loggerLevel:-1]];
     }];
     
+    // Namespace
+    [self setProperty:@"namespace" fromConfig:config withSetter:^(id value) {
+        [blocksafeSelf setNamespace:value];
+    }];
+    
     [self initTransportLayer];
     
     return YES;
@@ -325,12 +331,12 @@ FOUNDATION_STATIC_INLINE NSDictionary *defaultConfigs() {
     };
 }
 
-FOUNDATION_STATIC_INLINE NSDictionary *createDefaultOptions(NSDictionary *tags, NSArray *aggs, NSUInteger aggFreq) {
+FOUNDATION_STATIC_INLINE NSDictionary *createDefaultOptions(NSDictionary *tags, NSArray *aggs, NSNumber* aggFreq, NSString* namespace) {
     return @{
              @"tags" : tags ?: @{},
              @"agg": aggs ?: @[],
-             @"agg_freq": @(aggFreq),
-             @"namespace": kDefaultNamespace,
+             @"agg_freq": aggFreq ? aggFreq : @10,
+             @"namespace": namespace ?: kDefaultNamespace,
              @"timestamp": @([[NSDate date]timeIntervalSince1970])
              };
 }

@@ -66,4 +66,33 @@
     XCTAssertTrue([_sf_client isKindOfClass:[SFClient class]]);
 }
 
+/*
+ // Make that work exposing SFClient.h+Private with private properties
+ - (void)testDefaultConstructor {
+    XCTAssertEqual(_default_sfc.host, @"127.0.0.1");
+    XCTAssertEqual(_default_sfc.port, @"2013");
+    XCTAssertEqual(_default_sfc.secure, @YES);
+    XCTAssertEqual(_default_sfc.timeout, @2000);
+    XCTAssertEqual(_default_sfc.dryrun, @NO);
+    XCTAssertEqual(_default_sfc.tags, @[]);
+    XCTAssertEqual(_default_sfc.sampleRate, @100);
+    XCTAssertEqual(_default_sfc.flushSize, @10);
+}
+
+- (void)testCustomConstructor {
+    XCTAssertEqual(_sf_client.app, @"statful");
+    XCTAssertEqual(_sf_client.dryrun, @YES);
+    XCTAssertEqual(_sf_client.flushSize, @12);
+    XCTAssertEqual(_sf_client.host, @"123.456.789.123");
+    XCTAssertEqual(_sf_client.port, @"123");
+    XCTAssertEqual(_sf_client.sampleRate, @50);
+    XCTAssertEqual(_sf_client.secure, @NO);
+    XCTAssertEqual(_sf_client.timeout, @1000);
+    XCTAssertEqual(_sf_client.token, @"statful-token");
+    XCTAssertEqual(_sf_client.transport, SFClientTransportUDP);
+    
+    BOOL tags_arrays_compare_result = [_sf_client.tags isEqualToArray:@[@"tag_1", @"tag_2"]];
+    XCTAssertEqual(tags_arrays_compare_result, true);
+}*/
+
 @end
