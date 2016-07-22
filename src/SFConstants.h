@@ -24,14 +24,11 @@
 #import <Foundation/Foundation.h>
 #import <CocoaLumberjack/CocoaLumberjack.h>
 
+#define CURRENT_TIMESTAMP [NSString stringWithFormat:@"%lu", [@([[NSDate date] timeIntervalSince1970] * 1000.0) integerValue] ]
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface SFConstants : NSObject
-
-//Primitive Types
-FOUNDATION_EXTERN NSString* const kApiPath;
-FOUNDATION_EXTERN NSString* const kDefaultNamespace;
-FOUNDATION_EXTERN NSString* const kUserAgent;
 
 typedef NS_ENUM(short, SFClientTransport) {
     SFClientTransportTCP = 0,
@@ -45,8 +42,28 @@ typedef NS_ENUM(NSUInteger, SFLoggerLogLevel) {
     SFLoggerLogLevelVerbose = DDLogLevelVerbose
 };
 
+//Primitive Types
+FOUNDATION_EXTERN NSString* const kApiPath;
+FOUNDATION_EXTERN NSString* const kDefaultNamespace;
+FOUNDATION_EXTERN NSString* const kUserAgent;
+FOUNDATION_EXTERN SFLoggerLogLevel kDefaultLoggerLevel;
+FOUNDATION_EXTERN NSString* const kDefaultPort;
+FOUNDATION_EXTERN NSString* const kDefaultHost;
+
+
 //OBJ-C Objects
+FOUNDATION_EXTERN NSDictionary* kDefaultTags;
+FOUNDATION_EXTERN NSArray* kDefaultAggs;
 FOUNDATION_EXTERN NSNumber* kDefaultAggFreq;
+FOUNDATION_EXTERN NSDictionary* kDefaultDefaults;
+FOUNDATION_EXTERN NSArray* kImplementedMethods;
+FOUNDATION_EXTERN NSNumber* kDefaultFlushSize;
+FOUNDATION_EXTERN NSNumber* kDefaultFlushInterval;
+FOUNDATION_EXTERN NSNumber* kDefaultSampleRate;
+FOUNDATION_EXTERN DDAbstractLogger <DDLogger>* kDefaultLogger;
+FOUNDATION_EXTERN NSNumber* kDefaultDryrun;
+FOUNDATION_EXTERN NSNumber* kDefaultTimeout;
+FOUNDATION_EXTERN NSNumber* kDefaultSecure;
 
 @end
 

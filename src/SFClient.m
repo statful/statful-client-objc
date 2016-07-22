@@ -24,8 +24,12 @@
 // TO-DO
 // - Add default configs per method
 // - Sanitize options (aggs, tags, etc)
+// - Look at app tag
+// - Look at flush_size and flush_interval
+// - Add + Private in every class
 // - Finish the tests
 // - Configure the project for carthage too
+// - system_stats
 
 #import "SFClient.h"
 
@@ -43,6 +47,7 @@
 @property (strong, nonatomic) NSString *app;
 @property (strong, nonatomic) NSNumber *dryrun;
 @property (strong, nonatomic) NSNumber *flushSize;
+@property (strong, nonatomic) NSNumber *flushInterval;
 @property (strong, nonatomic) NSString *host;
 @property (strong, nonatomic) NSString *port;
 @property (strong, nonatomic) NSNumber *sampleRate;
@@ -52,7 +57,7 @@
 @property (strong, nonatomic) NSString *token;
 @property (assign, nonatomic) SFClientTransport transport;
 @property (strong, nonatomic) NSString *namespace;
-@property (strong, nonatomic) NSDictionary *defaults;
+@property (strong, nonatomic) NSMutableDictionary *defaults;
 
 @end
 
@@ -68,11 +73,10 @@
 - (instancetype)initWithConfig:(NSDictionary *)config {
     
     if (self = [super init]) {
-        
-        // TODO: Why not move logic to this method, since this should be the default init
-        // Also, this should be done. If configuration fails, we should use default Configs maybe, or throw exception. Class should use non_null initialisers
-        if (![self validateAndSetConfig:config]) {
-            // TODO: Need to work on this, if fails get another solution
+        @try {
+            [self validateAndSetConfig:config];
+        }
+        @catch(NSException* e) {
             return nil;
         }
     }
@@ -80,7 +84,7 @@
 }
 
 - (instancetype)init {
-    return [self initWithConfig:defaultConfigs()];
+    return [self initWithConfig:nil];
 }
 
 - (void)initTransportLayer {
@@ -122,10 +126,8 @@
 #pragma mark - Public Methods
 
 -(void)counterWithName:(NSString*)name value:(NSNumber*)value {
-    
-    NSDictionary *defaultOptions = createDefaultOptions(nil, @[@"avg", @"p90"], @10, _namespace);
-    
-    [self counterWithName:name value:value options:defaultOptions];
+    NSDictionary *options = calculateConfig();
+    [self counterWithName:name value:value options:options];
 }
 
 -(void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
@@ -133,10 +135,8 @@
 }
 
 -(void)gaugeWithName:(NSString*)name value:(NSNumber*)value {
-    
-    NSDictionary *defaultOptions = createDefaultOptions(nil, @[@"last"], @10, _namespace);
-
-    [self gaugeWithName:name value:value options:defaultOptions];
+    NSDictionary *options = calculateConfig();
+    [self gaugeWithName:name value:value options:options];
 }
 
 -(void)gaugeWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
@@ -144,9 +144,8 @@
 }
 
 -(void)timerWithName:(NSString*)name value:(NSNumber*)value {
-    NSDictionary *defaultOptions = createDefaultOptions(@{@"unit":@"ms"}, @[@"avg", @"p90", @"count"], @10, _namespace);
-    
-    [self timerWithName:name value:value options:defaultOptions];
+    NSDictionary *options = calculateConfig();
+    [self timerWithName:name value:value options:options];
 }
 
 -(void)timerWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
@@ -169,7 +168,7 @@
         [aggs appendString:[NSString stringWithFormat:@"%@=%@,",key,value]];
     }
     
-    NSString *metric = [NSString stringWithFormat:@"%@.%@.%@%@ %@ %@ %@%@", options[@"namespace"], type, name, tags, value, options[@"timestamp"], aggs, options[@"agg_freq"]];
+    NSString *metric = [NSString stringWithFormat:@"%@.%@.%@%@ %@ %lu %@%@", options[@"namespace"], type, name, tags, value, [options[@"timestamp"] integerValue], aggs, options[@"agg_freq"]];
     
     return metric;
 }
@@ -191,6 +190,26 @@
 
 #pragma mark - Properties setters
 
+- (void)setDefaults:(NSDictionary *)defaults {
+    _defaults = [[NSMutableDictionary alloc]initWithCapacity:kImplementedMethods.count];
+    
+    for (NSString* method in kImplementedMethods) {
+        if (defaults[method]) {
+            _defaults[method] = [[NSMutableDictionary alloc] init];
+            
+            if (defaults[method][@"tags"]) {
+                _defaults[method][@"tags"] = defaults[method][@"tags"];
+            }
+            if (defaults[method][@"aggs"]) {
+                _defaults[method][@"aggs"] = defaults[method][@"aggs"];
+            }
+            if (defaults[method][@"agg_freq"]) {
+                _defaults[method][@"agg_freq"] = defaults[method][@"agg_freq"];
+            }
+        }
+    }
+}
+
 - (void)setSampleRate:(NSNumber *)sampleRate {
     if ([sampleRate intValue] > 0 && [sampleRate intValue] < 101) {
         _sampleRate = sampleRate;
@@ -207,94 +226,103 @@
     }
 }
 
--(BOOL)validateAndSetConfig:(NSDictionary *)config {
+-(void)validateAndSetConfig:(NSDictionary *)config {
     __block SFClient *blocksafeSelf = self;
+    NSDictionary* propertiesRules = getPropertiesRules();
+    
+    // Logger
+    [self setProperty:@"logger" fromConfig:config WithRules:propertiesRules[@"logger"] AndWithSetter:^(id value) {
+        [blocksafeSelf setLogger:[[SFLogger alloc] initWithDDLoggerInstance:value loggerLevel:-1]];
+    }];
     
     // Host
-    [self setProperty:@"host" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"host" fromConfig:config WithRules:propertiesRules[@"host"] AndWithSetter:^(id value) {
         [blocksafeSelf setHost:value];
     }];
     
     // Port
-    [self setProperty:@"port" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"port" fromConfig:config WithRules:propertiesRules[@"port"] AndWithSetter:^(id value) {
         [blocksafeSelf setPort:value];
     }];
     
     // Transport
-    [self setProperty:@"transport" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"transport" fromConfig:config WithRules:propertiesRules[@"transport"] AndWithSetter:^(id value) {
         [blocksafeSelf setTransport:[((NSNumber*)value) intValue]];
     }];
     
     // Secure
-    [self setProperty:@"secure" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"secure" fromConfig:config WithRules:propertiesRules[@"secure"] AndWithSetter:^(id value) {
         [blocksafeSelf setSecure:value];
     }];
     
     // Timeout
-    [self setProperty:@"timeout" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"timeout" fromConfig:config WithRules:propertiesRules[@"timeout"] AndWithSetter:^(id value) {
         [blocksafeSelf setTimeout:value];
     }];
     
     // Token
-    [self setProperty:@"token" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"token" fromConfig:config WithRules:propertiesRules[@"token"] AndWithSetter:^(id value) {
         [blocksafeSelf setToken:value];
     }];
     
     // App
-    [self setProperty:@"app" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"app" fromConfig:config WithRules:propertiesRules[@"app"] AndWithSetter:^(id value) {
         [blocksafeSelf setApp:value];
     }];
     
     // Dryrun
-    [self setProperty:@"dryrun" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"dryrun" fromConfig:config WithRules:propertiesRules[@"dryrun"] AndWithSetter:^(id value) {
         [blocksafeSelf setDryrun:value];
     }];
     
     // Tags
-    [self setProperty:@"tags" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"tags" fromConfig:config WithRules:propertiesRules[@"tags"] AndWithSetter:^(id value) {
         [blocksafeSelf setTags:value];
     }];
     
     // Sample Rate
-    [self setProperty:@"sample_rate" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"sample_rate" fromConfig:config WithRules:propertiesRules[@"sample_rate"] AndWithSetter:^(id value) {
         [blocksafeSelf setSampleRate:value];
     }];
     
     // Flush Size
-    [self setProperty:@"flush_size" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"flush_size" fromConfig:config WithRules:propertiesRules[@"flush_size"] AndWithSetter:^(id value) {
         [blocksafeSelf setFlushSize:value];
     }];
     
-    // Logger
-    [self setProperty:@"logger" fromConfig:config withSetter:^(id value) {
-        [blocksafeSelf setLogger:[[SFLogger alloc] initWithDDLoggerInstance:value loggerLevel:-1]];
+    // Flush Interval
+    [self setProperty:@"flush_interval" fromConfig:config WithRules:propertiesRules[@"flush_interval"] AndWithSetter:^(id value) {
+        [blocksafeSelf setFlushInterval:value];
     }];
     
     // Namespace
-    [self setProperty:@"namespace" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"namespace" fromConfig:config WithRules:propertiesRules[@"namespace"] AndWithSetter:^(id value) {
         [blocksafeSelf setNamespace:value];
     }];
     
     // Defaults
-    [self setProperty:@"defaults" fromConfig:config withSetter:^(id value) {
+    [self setProperty:@"defaults" fromConfig:config WithRules:propertiesRules[@"defaults"] AndWithSetter:^(id value) {
         [blocksafeSelf setDefaults:value];
     }];
     
     [self initTransportLayer];
-    
-    return YES;
 }
 
 #pragma mark - Private Methods
 
-- (BOOL)setProperty:(NSString *)property fromConfig:(NSDictionary *)config withSetter:(void (^)(id value))setterFunction {
-    if (config[property] != nil) {
+- (void)setProperty:(NSString *)property fromConfig:(NSDictionary *)config WithRules:(NSDictionary*)rules AndWithSetter:(void (^)(id value))setterFunction {
+    
+    if ([config objectForKey:property]) {
         setterFunction(config[property]);
     } else {
-        [_logger logError:@"Property %@ doesn't exist on config.", property];
-        return NO;
+        if ([rules objectForKey:@"required"] && [rules[@"required"] isEqualTo:@YES]) {
+            @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error on config." userInfo:nil];
+        } else if ([rules objectForKey:@"default"]) {
+            setterFunction(rules[@"default"]);
+            [_logger logError:@"Property %@ doesn't exist on config. Default value '%@' was applied.", property, rules[@"default"]];
+        }
     }
-    return YES;
+    
 }
 
 -(void)flushBuffer {
@@ -322,31 +350,48 @@
     }
 }
 
-FOUNDATION_STATIC_INLINE NSDictionary *defaultConfigs() {
+FOUNDATION_STATIC_INLINE NSDictionary* calculateConfig() {
+    return calculateConfigWithOptions(nil);
+}
+
+FOUNDATION_STATIC_INLINE NSDictionary* calculateConfigWithOptions(NSDictionary* methodOptions) {
+    return @{};
+}
+
+FOUNDATION_STATIC_INLINE NSDictionary* getPropertiesRules() {
     
     return @{
-             @"host" : @"127.0.0.1",
-             @"port" : @"2013",
-             @"secure" : @YES,
-             @"timeout" : @2000,
-             @"dryrun" : @NO,
-             @"tags" : @[],
-             @"sample_rate" : @100,
-             @"flush_size" : @10,
-             @"logger" : [DDTTYLogger sharedInstance]
+             @"host": @{@"required":@NO, @"default":kDefaultHost},
+             @"port": @{@"required":@NO, @"default":kDefaultPort},
+             @"transport": @{@"required":@YES},
+             @"secure": @{@"required":@NO, @"default":kDefaultSecure},
+             @"timeout": @{@"required":@NO, @"default":kDefaultTimeout},
+             @"token": @{@"required":@NO},
+             @"app": @{@"required":@NO},
+             @"dryrun": @{@"required":@NO, @"default":kDefaultDryrun},
+             @"logger": @{@"required":@NO},
+             @"tags": @{@"required":@NO, @"default":kDefaultTags},
+             @"sample_rate": @{@"required":@NO, @"default":kDefaultSampleRate},
+             @"namespace": @{@"required":@NO, @"default":kDefaultNamespace},
+             @"flush_size": @{@"required":@NO, @"default":kDefaultFlushSize},
+             @"flush_interval": @{@"required":@NO, @"default":kDefaultFlushInterval},
+             @"defaults": @{@"required":@NO, @"default":kDefaultDefaults}
     };
 }
 
-FOUNDATION_STATIC_INLINE NSDictionary *createDefaultOptions(NSDictionary *tags, NSArray *aggs, NSNumber* aggFreq, NSString* namespace) {
+/*FOUNDATION_STATIC_INLINE NSDictionary *defaultConfigs() {
+    return @{};
+}
+
+FOUNDATION_STATIC_INLINE NSDictionary *createDefaultOptions(NSDictionary *tags, NSArray *aggs, NSNumber* aggFreq, NSString*namespace) {
     
-    NSLog(@"%@", kDefaultAggFreq);
     return @{
              @"tags" : tags ?: @{},
              @"agg": aggs ?: @[],
-             @"agg_freq": kDefaultAggFreq ? kDefaultAggFreq : @10,
+             @"agg_freq": kDefaultAggFreq ?: @10,
              @"namespace": namespace ?: kDefaultNamespace,
              @"timestamp": @([[NSDate date]timeIntervalSince1970])
     };
-}
+}*/
 
 @end

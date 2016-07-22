@@ -50,15 +50,15 @@ static DDLogLevel ddLogLevel = (DDLogLevel)SFLoggerLogLevelError;
             _loggerLevel = loggerLevel;
             ddLogLevel = (DDLogLevel)loggerLevel;
         } else {
-            _loggerLevel = SFLoggerLogLevelError;
-            ddLogLevel = (DDLogLevel)SFLoggerLogLevelError;
+            _loggerLevel = kDefaultLoggerLevel;
+            ddLogLevel = (DDLogLevel)_loggerLevel;
         }
         if (logger) {
             _logger = logger;
             [DDLog addLogger:logger withLevel:(DDLogLevel)loggerLevel];
         } else {
-            _logger = [DDTTYLogger sharedInstance];
-            [DDLog addLogger:[DDTTYLogger sharedInstance]];
+            _logger = kDefaultLogger;
+            [DDLog addLogger:_logger];
         }
     }
     
