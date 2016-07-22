@@ -356,6 +356,13 @@ FOUNDATION_STATIC_INLINE NSDictionary* calculateConfig() {
 
 FOUNDATION_STATIC_INLINE NSDictionary* calculateConfigWithOptions(NSDictionary* methodOptions) {
     return @{};
+    /*return @{
+                    @"tags" : tags ?: @{},
+                    @"agg": aggs ?: @[],
+                    @"agg_freq": kDefaultAggFreq ?: @10,
+                    @"namespace": namespace ?: kDefaultNamespace,
+                    @"timestamp": @([[NSDate date]timeIntervalSince1970])
+                    };*/
 }
 
 FOUNDATION_STATIC_INLINE NSDictionary* getPropertiesRules() {

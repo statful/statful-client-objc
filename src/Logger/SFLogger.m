@@ -21,15 +21,6 @@
 //  THE SOFTWARE.
 //
 
-// TO-DO
-// - Turn some variables private
-// - Define the static const variables on implementation with extern
-// - Add default configs per method
-// - Sanitize options (aggs, tags, etc)
-// - Review SFCommunicationHTTP.m, SFClient.m, SFClient.h
-// - Configure the project for carthage too
-// - Finish the tests
-
 #import "SFLogger.h"
 
 static DDLogLevel ddLogLevel = (DDLogLevel)SFLoggerLogLevelError;
