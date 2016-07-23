@@ -22,7 +22,6 @@
 //
 
 // TO-DO
-// - Add AggFreq only if have agg
 // - Look at flush_size and flush_interval
 // - Add default configs per method
 // - Sanitize options (aggs, tags, etc)
@@ -157,6 +156,7 @@
 -(NSString*)metricBuilderWithType:(NSString*)type name:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
     NSMutableString *tags = [[NSMutableString alloc] init];
     NSMutableString *aggs = [[NSMutableString alloc] init];
+    NSString* aggsWithAggFreq = @"";
     NSDictionary *tags_in_dict = options[@"tags"];
     NSDictionary *aggs_in_dict = options[@"agg"];
     
@@ -170,7 +170,11 @@
         [aggs appendString:[NSString stringWithFormat:@"%@=%@,",key,value]];
     }
     
-    NSString *metric = [NSString stringWithFormat:@"%@.%@.%@%@ %@ %lu %@%@", options[@"namespace"], type, name, tags, value, [options[@"timestamp"] integerValue], aggs, options[@"agg_freq"]];
+    if (aggs.length > 0) {
+        aggsWithAggFreq = [NSString stringWithFormat:@" %@%@", aggs, options[@"agg_freq"]];
+    }
+    
+    NSString *metric = [NSString stringWithFormat:@"%@.%@.%@%@ %@ %lu%@", options[@"namespace"], type, name, tags, value, [options[@"timestamp"] integerValue], aggsWithAggFreq];
     
     return metric;
 }
