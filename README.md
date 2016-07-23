@@ -25,4 +25,4 @@ Tiago Ferreira, tiago.ferreira@mindera.com
 
 ## License
 
-Telemetron Client is available under the MIT license. See the LICENSE file for more info.
+Statful Obj-C Client is available under the MIT license. See the LICENSE file for more info.
