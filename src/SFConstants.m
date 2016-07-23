@@ -33,8 +33,7 @@ NSString* const kDefaultPort = @"2013";
 NSString* const kDefaultHost = @"127.0.0.1";
 
 //OBJ-C Objects
-NSDictionary* kDefaultTags;
-NSArray* kDefaultAggs;
+NSDictionary* kDefaultGlobalTags;
 NSNumber*  kDefaultAggFreq;
 NSDictionary* kDefaultDefaults;
 NSArray* kImplementedMethods;
@@ -45,11 +44,12 @@ NSNumber* kDefaultDryrun;
 NSNumber* kDefaultTimeout;
 NSNumber* kDefaultSecure;
 DDAbstractLogger <DDLogger>* kDefaultLogger;
+NSDictionary* kDefaultTagsByMethod;
+NSDictionary* kDefaultAggByMethod;
 
 //Function to init object constants
 void __attribute__((constructor)) initializeConstants() {
-    kDefaultTags = @{};
-    kDefaultAggs = @[];
+    kDefaultGlobalTags = @{};
     kDefaultAggFreq = @10;
     kImplementedMethods = @[@"counter", @"gauge", @"timer"];
     kDefaultDefaults = @{};
@@ -60,6 +60,14 @@ void __attribute__((constructor)) initializeConstants() {
     kDefaultTimeout = @2000;
     kDefaultSecure = @YES;
     kDefaultLogger = [DDTTYLogger sharedInstance];
+    kDefaultTagsByMethod = @{ @"timer": @{@"unit": @"ms"},
+                              @"counter": @{},
+                              @"gauge": @{}
+    };
+    kDefaultAggByMethod = @{ @"timer": @[@"avg", @"p90", @"count"],
+                             @"counter": @[@"sum", @"count"],
+                             @"gauge": @[@"last"]
+    };
 }
 
 @end

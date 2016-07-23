@@ -22,14 +22,14 @@
 //
 
 // TO-DO
+// - Add AggFreq only if have agg
+// - Look at flush_size and flush_interval
 // - Add default configs per method
 // - Sanitize options (aggs, tags, etc)
-// - Look at app tag
-// - Look at flush_size and flush_interval
-// - Add + Private in every class
 // - Finish the tests
+// - Add + Private as needed for unit tests
 // - Configure the project for carthage too
-// - system_stats
+// - Later on add some system stats automatically
 
 #import "SFClient.h"
 
@@ -126,37 +126,39 @@
 #pragma mark - Public Methods
 
 -(void)counterWithName:(NSString*)name value:(NSNumber*)value {
-    NSDictionary *options = calculateConfig();
-    [self counterWithName:name value:value options:options];
+    [self counterWithName:name value:value options:nil];
 }
 
 -(void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
-    [self putWithType:@"counter" name:name value:value options:options];
+    [self methodWithType:@"counter" name:name value:value options:options];
 }
 
 -(void)gaugeWithName:(NSString*)name value:(NSNumber*)value {
-    NSDictionary *options = calculateConfig();
-    [self gaugeWithName:name value:value options:options];
+    [self gaugeWithName:name value:value options:nil];
 }
 
 -(void)gaugeWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
-    [self putWithType:@"gauge" name:name value:value options:options];
+    [self methodWithType:@"gauge" name:name value:value options:options];
 }
 
 -(void)timerWithName:(NSString*)name value:(NSNumber*)value {
-    NSDictionary *options = calculateConfig();
-    [self timerWithName:name value:value options:options];
+    [self timerWithName:name value:value options:nil];
 }
 
 -(void)timerWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
-    [self putWithType:@"timer" name:name value:value options:options];
+    [self methodWithType:@"timer" name:name value:value options:options];
+}
+
+-(void)methodWithType:(NSString*)type name:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
+    NSDictionary *processedOptions = [self calculateConfigForType:type withOptions:options];
+    [self putWithType:type name:name value:value options:processedOptions];
 }
 
 -(NSString*)metricBuilderWithType:(NSString*)type name:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
     NSMutableString *tags = [[NSMutableString alloc] init];
     NSMutableString *aggs = [[NSMutableString alloc] init];
     NSDictionary *tags_in_dict = options[@"tags"];
-    NSDictionary *aggs_in_dict = options[@"aggs"];
+    NSDictionary *aggs_in_dict = options[@"agg"];
     
     for (NSString* key in tags_in_dict) {
         NSString* value = [tags_in_dict objectForKey:key];
@@ -200,8 +202,8 @@
             if (defaults[method][@"tags"]) {
                 _defaults[method][@"tags"] = defaults[method][@"tags"];
             }
-            if (defaults[method][@"aggs"]) {
-                _defaults[method][@"aggs"] = defaults[method][@"aggs"];
+            if (defaults[method][@"agg"]) {
+                _defaults[method][@"agg"] = defaults[method][@"agg"];
             }
             if (defaults[method][@"agg_freq"]) {
                 _defaults[method][@"agg_freq"] = defaults[method][@"agg_freq"];
@@ -327,10 +329,9 @@
 
 -(void)flushBuffer {
     if (self.metricsBuffer.count >= self.flushSize.intValue) {
+        // TODO - Add also flush_rate interval
         NSString *metricsToFlush = [self.metricsBuffer componentsJoinedByString:@"\n"];
-        
         [self flushMetrics:metricsToFlush];
-        
         [self.metricsBuffer removeAllObjects];
     }
 }
@@ -350,19 +351,75 @@
     }
 }
 
-FOUNDATION_STATIC_INLINE NSDictionary* calculateConfig() {
-    return calculateConfigWithOptions(nil);
+-(NSDictionary*) calculateConfigForType:(NSString*) type {
+    return [self calculateConfigForType:type withOptions:nil];
 }
 
-FOUNDATION_STATIC_INLINE NSDictionary* calculateConfigWithOptions(NSDictionary* methodOptions) {
-    return @{};
-    /*return @{
-                    @"tags" : tags ?: @{},
-                    @"agg": aggs ?: @[],
-                    @"agg_freq": kDefaultAggFreq ?: @10,
-                    @"namespace": namespace ?: kDefaultNamespace,
-                    @"timestamp": @([[NSDate date]timeIntervalSince1970])
-                    };*/
+-(NSDictionary*) calculateConfigForType:(NSString*) type withOptions:(NSDictionary*) methodOptions {
+    NSMutableDictionary* configOptions = [[NSMutableDictionary alloc]init];
+    NSMutableDictionary* methodGlobalDefaults = _defaults[type];
+    
+    //Apply Global Tags and App tag if app was defined on client constructor
+    configOptions[@"tags"] = _tags;
+    if ([_app length] > 0) {
+        [configOptions[@"tags"] addEntriesFromDictionary:@{@"app": _app}];
+    }
+    
+    configOptions[@"namespace"] = _namespace;
+    configOptions[@"timestamp"] = CURRENT_TIMESTAMP;
+    
+    // Calculate Defaults
+    if ([methodGlobalDefaults objectForKey:@"tags"]) {
+        [configOptions[@"tags"] addEntriesFromDictionary:methodGlobalDefaults[@"tags"]];
+    } else {
+        configOptions[@"tags"] = kDefaultTagsByMethod[type];
+    }
+    
+    if ([methodGlobalDefaults objectForKey:@"agg"]) {
+        configOptions[@"agg"] = methodGlobalDefaults[@"agg"];
+    } else {
+        configOptions[@"agg"] = kDefaultAggByMethod[type];
+    }
+    
+    if ([methodGlobalDefaults objectForKey:@"agg_freq"]) {
+        configOptions[@"agg_freq"] = methodGlobalDefaults[@"agg_freq"];
+    } else {
+        configOptions[@"agg_freq"] = kDefaultAggFreq;
+    }
+    
+    // Merge with methodOptions if exists
+    if (methodOptions != nil) {
+        if ([methodOptions objectForKey:@"tags"]) {
+            [configOptions[@"tags"] addEntriesFromDictionary:methodOptions[@"tags"]];
+        }
+        
+        if ([methodOptions objectForKey:@"agg"]) {
+            configOptions[@"agg"] = [self mergeArraysWithoutDuplicates:methodOptions[@"agg"] otherArray:configOptions[@"agg"]];
+        }
+        
+        if ([methodOptions objectForKey:@"agg_freq"]) {
+            configOptions[@"agg_freq"] = methodOptions[@"agg_freq"];
+        }
+        
+        if ([methodOptions objectForKey:@"namespace"]) {
+            configOptions[@"namespace"] = methodOptions[@"namespace"];
+        }
+        
+        if ([methodOptions objectForKey:@"timestamp"]) {
+            configOptions[@"timestamp"] = methodOptions[@"timestamp"];
+        }
+    }
+    
+    
+    return configOptions;
+}
+
+-(NSArray*)mergeArraysWithoutDuplicates:(NSArray*)arrA otherArray:(NSArray*)arrB {
+    NSMutableSet *set = [[NSMutableSet alloc] init];
+    [set addObjectsFromArray:arrA];
+    [set addObjectsFromArray:arrB];
+    
+    return [[set allObjects] mutableCopy];
 }
 
 FOUNDATION_STATIC_INLINE NSDictionary* getPropertiesRules() {
@@ -377,7 +434,7 @@ FOUNDATION_STATIC_INLINE NSDictionary* getPropertiesRules() {
              @"app": @{@"required":@NO},
              @"dryrun": @{@"required":@NO, @"default":kDefaultDryrun},
              @"logger": @{@"required":@NO},
-             @"tags": @{@"required":@NO, @"default":kDefaultTags},
+             @"tags": @{@"required":@NO, @"default":kDefaultGlobalTags},
              @"sample_rate": @{@"required":@NO, @"default":kDefaultSampleRate},
              @"namespace": @{@"required":@NO, @"default":kDefaultNamespace},
              @"flush_size": @{@"required":@NO, @"default":kDefaultFlushSize},
@@ -385,20 +442,5 @@ FOUNDATION_STATIC_INLINE NSDictionary* getPropertiesRules() {
              @"defaults": @{@"required":@NO, @"default":kDefaultDefaults}
     };
 }
-
-/*FOUNDATION_STATIC_INLINE NSDictionary *defaultConfigs() {
-    return @{};
-}
-
-FOUNDATION_STATIC_INLINE NSDictionary *createDefaultOptions(NSDictionary *tags, NSArray *aggs, NSNumber* aggFreq, NSString*namespace) {
-    
-    return @{
-             @"tags" : tags ?: @{},
-             @"agg": aggs ?: @[],
-             @"agg_freq": kDefaultAggFreq ?: @10,
-             @"namespace": namespace ?: kDefaultNamespace,
-             @"timestamp": @([[NSDate date]timeIntervalSince1970])
-    };
-}*/
 
 @end

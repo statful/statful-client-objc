@@ -52,8 +52,7 @@ FOUNDATION_EXTERN NSString* const kDefaultHost;
 
 
 //OBJ-C Objects
-FOUNDATION_EXTERN NSDictionary* kDefaultTags;
-FOUNDATION_EXTERN NSArray* kDefaultAggs;
+FOUNDATION_EXTERN NSDictionary* kDefaultGlobalTags;
 FOUNDATION_EXTERN NSNumber* kDefaultAggFreq;
 FOUNDATION_EXTERN NSDictionary* kDefaultDefaults;
 FOUNDATION_EXTERN NSArray* kImplementedMethods;
@@ -64,6 +63,8 @@ FOUNDATION_EXTERN DDAbstractLogger <DDLogger>* kDefaultLogger;
 FOUNDATION_EXTERN NSNumber* kDefaultDryrun;
 FOUNDATION_EXTERN NSNumber* kDefaultTimeout;
 FOUNDATION_EXTERN NSNumber* kDefaultSecure;
+FOUNDATION_EXTERN NSDictionary* kDefaultTagsByMethod;
+FOUNDATION_EXTERN NSDictionary* kDefaultAggByMethod;
 
 @end
 
