@@ -21,9 +21,8 @@
 //  THE SOFTWARE.
 //
 
-// TO-DO
-// - Look at flush_size and flush_interval
-// - Add default configs per method
+// TODO: Review this points
+// - Add start and stop(should flush on end) + NSRunLoop
 // - Sanitize options (aggs, tags, etc)
 // - Finish the tests
 // - Add + Private as needed for unit tests
@@ -57,6 +56,7 @@
 @property (assign, nonatomic) SFClientTransport transport;
 @property (strong, nonatomic) NSString *namespace;
 @property (strong, nonatomic) NSMutableDictionary *defaults;
+@property (strong, nonatomic) NSTimer *flushTimer;
 
 @end
 
@@ -120,6 +120,11 @@
     } else {
         [_logger logError:@"Error initing transport layer: %@.", errorInit];
     }
+}
+
+-(void)initFlushTimer {
+    _flushTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(flushBuffer) userInfo:nil repeats:YES];
+    [[NSRunLoop mainRunLoop] addTimer:_flushTimer forMode:NSDefaultRunLoopMode];
 }
 
 #pragma mark - Public Methods
@@ -312,6 +317,7 @@
     }];
     
     [self initTransportLayer];
+    [self initFlushTimer];
 }
 
 #pragma mark - Private Methods
@@ -333,7 +339,6 @@
 
 -(void)flushBuffer {
     if (self.metricsBuffer.count >= self.flushSize.intValue) {
-        // TODO - Add also flush_rate interval
         NSString *metricsToFlush = [self.metricsBuffer componentsJoinedByString:@"\n"];
         [self flushMetrics:metricsToFlush];
         [self.metricsBuffer removeAllObjects];

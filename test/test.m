@@ -69,6 +69,21 @@
 }
 
 /*
+ - (void)testTimer {
+ XCTAssertNil(_default_sfc);
+ XCTAssertTrue([_sf_client isKindOfClass:[SFClient class]]);
+ 
+ NSLog(@"timer time");
+ 
+ NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow: 3.0 ];
+ 
+ NSLog(@"about to wait");
+ [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+ NSLog(@"wait time is over");
+ 
+ [[NSRunLoop currentRunLoop] run];
+ }
+ 
  // Make that work exposing SFClient.h+Private with private properties
  - (void)testDefaultConstructor {
     XCTAssertEqual(_default_sfc.host, @"127.0.0.1");
