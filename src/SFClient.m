@@ -24,12 +24,12 @@
 // TODO: Review this points
 // - Finish the tests
 // - Add + Private as needed for unit tests
-// - Configure the project for carthage too
 // - Public Documentation
+// - Configure the project for carthage too
 // - Later on add some system stats automatically
 
 #import "SFClient.h"
-
+#import "SFClient+Private.h"
 #import "SFCommunicationProtocol.h"
 #import "SFCommunicationHTTP.h"
 #import "SFCommunicationSocketTCP.h"
@@ -38,24 +38,7 @@
 
 @interface SFClient ()
 
-// Implementation related properties
 @property (strong, nonatomic) id<SFCommunicationProtocol> connection;
-@property (strong, nonatomic) NSMutableArray *metricsBuffer;
-@property (strong, nonatomic) NSString *app;
-@property (strong, nonatomic) NSNumber *dryrun;
-@property (strong, nonatomic) NSNumber *flushSize;
-@property (strong, nonatomic) NSNumber *flushInterval;
-@property (strong, nonatomic) NSString *host;
-@property (strong, nonatomic) NSString *port;
-@property (strong, nonatomic) NSNumber *sampleRate;
-@property (strong, nonatomic) NSNumber *secure;
-@property (strong, nonatomic) NSArray  *tags;
-@property (strong, nonatomic) NSNumber *timeout;
-@property (strong, nonatomic) NSString *token;
-@property (assign, nonatomic) SFClientTransport transport;
-@property (strong, nonatomic) NSString *namespace;
-@property (strong, nonatomic) NSMutableDictionary *defaults;
-@property (strong, nonatomic) NSTimer *flushTimer;
 
 @end
 
@@ -242,16 +225,15 @@
     NSMutableString *aggs = [[NSMutableString alloc] init];
     NSString* aggsWithAggFreq = @"";
     NSDictionary *tags_in_dict = options[@"tags"];
-    NSDictionary *aggs_in_dict = options[@"agg"];
+    NSArray *aggs_in_array = options[@"agg"];
     
     for (NSString* key in tags_in_dict) {
         NSString* value = [tags_in_dict objectForKey:key];
         [tags appendString:[NSString stringWithFormat:@",%@=%@",key,value]];
     }
     
-    for (NSString* key in aggs_in_dict) {
-        NSString* value = [aggs_in_dict objectForKey:key];
-        [aggs appendString:[NSString stringWithFormat:@"%@=%@,",key,value]];
+    for (NSString* agg in aggs_in_array) {
+        [aggs appendString:[NSString stringWithFormat:@"%@,",agg]];
     }
     
     if (aggs.length > 0) {
@@ -317,9 +299,9 @@
 }
 
 - (void)setSampleRate:(id)sampleRate {
-    if (![sampleRate isKindOfClass:[NSString class]]) {
+    if (![sampleRate isKindOfClass:[NSNumber class]]) {
         @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting sample rate: should be a NSNumber." userInfo:nil];
-    } else if ([sampleRate intValue] < 0 || [sampleRate intValue] > 101) {
+    } else if ([sampleRate intValue] <= 0 || [sampleRate intValue] >= 101) {
         @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting sample rate: should be in rage [1, 100]." userInfo:nil];
     } else {
        _sampleRate = sampleRate;
@@ -407,7 +389,7 @@
 }
 
 -(void)setFlushSize:(id)flushSize {
-    if ([flushSize isKindOfClass:[NSString class]]) {
+    if ([flushSize isKindOfClass:[NSNumber class]]) {
         _flushSize = flushSize;
     } else {
         @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting flush size: should be a NSNumber." userInfo:nil];
@@ -415,7 +397,7 @@
 }
 
 -(void)setFlushInterval:(id)flushInterval {
-    if ([flushInterval isKindOfClass:[NSString class]]) {
+    if ([flushInterval isKindOfClass:[NSNumber class]]) {
         _flushInterval = flushInterval;
     } else {
         @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting flush interval: should be a NSNumber." userInfo:nil];
