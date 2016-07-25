@@ -22,11 +22,10 @@
 //
 
 // TODO: Review this points
-// - Add start and stop(should flush on end) + NSRunLoop
-// - Sanitize options (aggs, tags, etc)
 // - Finish the tests
 // - Add + Private as needed for unit tests
 // - Configure the project for carthage too
+// - Public Documentation
 // - Later on add some system stats automatically
 
 #import "SFClient.h"
@@ -64,7 +63,7 @@
 
 #pragma mark - Convenience Initialisers
 
-+(instancetype)clientWithConfig:(NSDictionary *)config {
++ (instancetype)clientWithConfig:(NSDictionary *)config {
     
     return [[[self class] alloc] initWithConfig:config];
 }
@@ -72,10 +71,15 @@
 - (instancetype)initWithConfig:(NSDictionary *)config {
     
     if (self = [super init]) {
+        _isStarted = NO;
+        _isConfigCorrect = NO;
+        
         @try {
             [self validateAndSetConfig:config];
         }
         @catch(NSException* e) {
+            _isStarted = NO;
+            _isConfigCorrect = NO;
             return nil;
         }
     }
@@ -123,8 +127,45 @@
 }
 
 -(void)initFlushTimer {
-    _flushTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(flushBuffer) userInfo:nil repeats:YES];
-    [[NSRunLoop mainRunLoop] addTimer:_flushTimer forMode:NSDefaultRunLoopMode];
+    _flushTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(flushBufferWithTimer) userInfo:nil repeats:YES];
+    [[NSRunLoop currentRunLoop] addTimer:_flushTimer forMode:NSDefaultRunLoopMode];
+}
+
+-(BOOL)start {
+    BOOL startedSucessfuly = NO;
+    
+    if (!_isStarted) {
+        if (_isConfigCorrect) {
+            [self initTransportLayer];
+            [self initFlushTimer];
+            [[NSRunLoop currentRunLoop] run];
+            
+            _isStarted = YES;
+            startedSucessfuly = YES;
+            [_logger logDebug:@"Client was started."];
+        } else {
+            [_logger logDebug:@"Client config is not valid."];
+        }
+    } else {
+        [_logger logDebug:@"Client is already running."];
+    }
+    
+    return startedSucessfuly;
+}
+
+-(BOOL)stop {
+    BOOL stoppedSucessfuly = NO;
+    
+    if (_isStarted) {
+        [self flushBuffer:YES];
+        _isStarted = NO;
+        stoppedSucessfuly = YES;
+        [_logger logDebug:@"Client was stopped."];
+    } else {
+        [_logger logDebug:@"Client is not started."];
+    }
+    
+    return stoppedSucessfuly;
 }
 
 #pragma mark - Public Methods
@@ -187,7 +228,7 @@
 -(void)putRawWithType:(NSString*)type name:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
     NSString* metric = [self metricBuilderWithType:type name:name value:value options:options];
     [self.metricsBuffer addObject:metric];
-    [self flushBuffer];
+    [self flushBuffer:NO];
 }
 
 -(void)putWithType:(NSString*)type name:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
@@ -316,8 +357,7 @@
         [blocksafeSelf setDefaults:value];
     }];
     
-    [self initTransportLayer];
-    [self initFlushTimer];
+    _isConfigCorrect = YES;
 }
 
 #pragma mark - Private Methods
@@ -337,12 +377,16 @@
     
 }
 
--(void)flushBuffer {
-    if (self.metricsBuffer.count >= self.flushSize.intValue) {
+-(void)flushBuffer:(BOOL)force {
+    if (self.metricsBuffer.count >= self.flushSize.intValue || force) {
         NSString *metricsToFlush = [self.metricsBuffer componentsJoinedByString:@"\n"];
         [self flushMetrics:metricsToFlush];
         [self.metricsBuffer removeAllObjects];
     }
+}
+
+-(void)flushBufferWithTimer {
+    [self flushBuffer:YES];
 }
 
 -(void)flushMetrics:(NSString*)metrics {

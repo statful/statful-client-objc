@@ -56,6 +56,7 @@
                    };
     
     _sf_client = [SFClient clientWithConfig:_sf_config];
+    [_sf_client start];
 }
 
 - (void)tearDown {

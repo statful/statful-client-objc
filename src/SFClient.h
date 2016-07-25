@@ -28,10 +28,14 @@
 
 #pragma mark - Properties
 @property (strong, nonatomic) SFLogger *logger;
+@property (assign, nonatomic) BOOL isStarted;
+@property (assign, nonatomic) BOOL isConfigCorrect;
 
 #pragma mark - Convenience Initialisers
 + (instancetype)clientWithConfig:(NSDictionary*)config;
 - (instancetype)initWithConfig:(NSDictionary*)config NS_DESIGNATED_INITIALIZER;
+- (BOOL)start;
+- (BOOL)stop;
 
 #pragma mark - Public Methods
 // TODO: Complete this methods descriptions
