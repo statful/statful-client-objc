@@ -80,6 +80,8 @@
         @catch(NSException* e) {
             _isStarted = NO;
             _isConfigCorrect = NO;
+            [_logger logError:e.reason];
+            
             return nil;
         }
     }
@@ -122,7 +124,7 @@
     if (successInit) {
         [_logger logDebug:@"Success initing transport layer."];
     } else {
-        [_logger logError:@"Error initing transport layer: %@.", errorInit];
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:[NSString stringWithFormat:@"Error initing transport layer: %@.", errorInit] userInfo:nil];
     }
 }
 
@@ -136,13 +138,17 @@
     
     if (!_isStarted) {
         if (_isConfigCorrect) {
-            [self initTransportLayer];
-            [self initFlushTimer];
-            [[NSRunLoop currentRunLoop] run];
-            
-            _isStarted = YES;
-            startedSucessfuly = YES;
-            [_logger logDebug:@"Client was started."];
+            @try {
+                [self initTransportLayer];
+                [self initFlushTimer];
+                [[NSRunLoop currentRunLoop] run];
+                
+                _isStarted = YES;
+                startedSucessfuly = YES;
+                [_logger logDebug:@"Client was started."];
+            } @catch(NSException* e) {
+                [_logger logError:e.reason];
+            }
         } else {
             [_logger logDebug:@"Client config is not valid."];
         }
