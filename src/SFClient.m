@@ -139,6 +139,10 @@
     if (!_isStarted) {
         if (_isConfigCorrect) {
             @try {
+                // Clear buffer to start
+                [self.metricsBuffer removeAllObjects];
+                
+                // Init the transport layer and the flush rate timer
                 [self initTransportLayer];
                 [self initFlushTimer];
                 [[NSRunLoop currentRunLoop] run];
@@ -396,17 +400,21 @@
 }
 
 -(void)flushMetrics:(NSString*)metrics {
-    if (self.dryrun) {
-        [_logger logDebug:@"%@",metrics];
+    if (_isStarted) {
+        if (self.dryrun) {
+            [_logger logDebug:@"%@",metrics];
+        } else {
+            NSData *metricsData = [metrics dataUsingEncoding:NSUTF8StringEncoding];
+            [self.connection sendMetricsData:metricsData completionBlock:^(BOOL success, NSError *error) {
+                if (success) {
+                    [_logger logDebug:@"Metrics were flushed successfully."];
+                } else {
+                    [_logger logError:@"An error has happened during metrics flush: %@.", error];
+                }
+            }];
+        }
     } else {
-        NSData *metricsData = [metrics dataUsingEncoding:NSUTF8StringEncoding];
-        [self.connection sendMetricsData:metricsData completionBlock:^(BOOL success, NSError *error) {
-            if (success) {
-                [_logger logDebug:@"Metrics were flushed successfully."];
-            } else {
-                [_logger logError:@"An error has happened during metrics flush: %@.", error];
-            }
-        }];
+        [_logger logError:@"Can't flush metrics while client is not started."];
     }
 }
 
