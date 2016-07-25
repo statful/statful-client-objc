@@ -29,7 +29,7 @@
 #pragma mark - Properties
 @property (strong, nonatomic) SFLogger *logger;
 @property (assign, nonatomic) BOOL isStarted;
-@property (assign, nonatomic) BOOL isConfigCorrect;
+@property (assign, nonatomic) BOOL isConfigValid;
 
 #pragma mark - Convenience Initialisers
 + (instancetype)clientWithConfig:(NSDictionary*)config;

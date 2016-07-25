@@ -43,6 +43,7 @@
                    @"app": @"statful",
                    @"dryrun" : [NSNumber numberWithBool:YES],
                    @"flush_size" : [NSNumber numberWithInt:12],
+                   @"flush_interval" : [NSNumber numberWithInt:10],
                    @"host" : @"123.456.789.123",
                    @"port" : @"123",
                    @"sample_rate" : [NSNumber numberWithInt:50],
@@ -51,8 +52,10 @@
                    @"timeout": [NSNumber numberWithInt:1000],
                    @"token": @"statful-token",
                    @"transport": [NSNumber numberWithInt:SFClientTransportUDP],
-                   @"defaults": @{},
-                   @"logger": [DDTTYLogger sharedInstance]
+                   @"logger": [DDTTYLogger sharedInstance],
+                   @"secure" : [NSNumber numberWithBool:NO],
+                   @"namespace" : @"application",
+                   @"defaults": @{}
                    };
     
     _sf_client = [SFClient clientWithConfig:_sf_config];
@@ -66,6 +69,10 @@
 - (void)testBuiltClass {
     XCTAssertNil(_default_sfc);
     XCTAssertTrue([_sf_client isKindOfClass:[SFClient class]]);
+}
+
+- (void)testConstructorOnSuccess {
+    
 }
 
 /*

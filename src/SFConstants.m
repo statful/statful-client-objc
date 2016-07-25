@@ -25,14 +25,15 @@
 
 @implementation SFConstants
 //Primitive Types
+SFLoggerLogLevel kDefaultLoggerLevel = SFLoggerLogLevelError;
 NSString* const kApiPath = @"/tel/v2.0/metrics";
 NSString* const kDefaultNamespace = @"application";
 NSString* const kUserAgent = @"statful-client-objc";
-SFLoggerLogLevel kDefaultLoggerLevel = SFLoggerLogLevelError;
 NSString* const kDefaultPort = @"2013";
 NSString* const kDefaultHost = @"127.0.0.1";
 
 //OBJ-C Objects
+DDAbstractLogger <DDLogger>* kDefaultLogger;
 NSDictionary* kDefaultGlobalTags;
 NSNumber*  kDefaultAggFreq;
 NSDictionary* kDefaultDefaults;
@@ -43,12 +44,14 @@ NSNumber* kDefaultSampleRate;
 NSNumber* kDefaultDryrun;
 NSNumber* kDefaultTimeout;
 NSNumber* kDefaultSecure;
-DDAbstractLogger <DDLogger>* kDefaultLogger;
 NSDictionary* kDefaultTagsByMethod;
 NSDictionary* kDefaultAggByMethod;
+NSArray* kSupportedAgg;
+NSArray* kSupportedAggFreq;
 
 //Function to init object constants
 void __attribute__((constructor)) initializeConstants() {
+    kDefaultLogger = [DDTTYLogger sharedInstance];
     kDefaultGlobalTags = @{};
     kDefaultAggFreq = @10;
     kImplementedMethods = @[@"counter", @"gauge", @"timer"];
@@ -59,7 +62,6 @@ void __attribute__((constructor)) initializeConstants() {
     kDefaultDryrun = @NO;
     kDefaultTimeout = @2000;
     kDefaultSecure = @YES;
-    kDefaultLogger = [DDTTYLogger sharedInstance];
     kDefaultTagsByMethod = @{ @"timer": @{@"unit": @"ms"},
                               @"counter": @{},
                               @"gauge": @{}
@@ -68,6 +70,9 @@ void __attribute__((constructor)) initializeConstants() {
                              @"counter": @[@"sum", @"count"],
                              @"gauge": @[@"last"]
     };
+    kSupportedAgg = @[@"avg", @"count", @"sum", @"first", @"last",
+                               @"p90", @"p95", @"min", @"max", @"derivative"];
+    kSupportedAggFreq = @[@10, @30, @60, @120, @180, @300];
 }
 
 @end

@@ -72,14 +72,14 @@
     
     if (self = [super init]) {
         _isStarted = NO;
-        _isConfigCorrect = NO;
+        _isConfigValid = NO;
         
         @try {
             [self validateAndSetConfig:config];
         }
         @catch(NSException* e) {
             _isStarted = NO;
-            _isConfigCorrect = NO;
+            _isConfigValid = NO;
             [_logger logError:e.reason];
             
             return nil;
@@ -124,7 +124,7 @@
     if (successInit) {
         [_logger logDebug:@"Success initing transport layer."];
     } else {
-        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:[NSString stringWithFormat:@"Error initing transport layer: %@.", errorInit] userInfo:nil];
+        @throw [NSException exceptionWithName:@"SFClientTransportInitError" reason:[NSString stringWithFormat:@"Error initing transport layer: %@.", errorInit] userInfo:nil];
     }
 }
 
@@ -137,7 +137,7 @@
     BOOL startedSucessfuly = NO;
     
     if (!_isStarted) {
-        if (_isConfigCorrect) {
+        if (_isConfigValid) {
             @try {
                 // Clear buffer to start
                 [self.metricsBuffer removeAllObjects];
@@ -205,8 +205,36 @@
 }
 
 -(void)methodWithType:(NSString*)type name:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
-    NSDictionary *processedOptions = [self calculateConfigForType:type withOptions:options];
-    [self putWithType:type name:name value:value options:processedOptions];
+    if ([self areMethodOptionsValid:options]) {
+        NSDictionary *processedOptions = [self calculateConfigForType:type withOptions:options];
+        [self putWithType:type name:name value:value options:processedOptions];
+    } else {
+        [_logger logError:@"Metric not sent. Please review the following: aggregations, aggregation frequency and tags."];
+    }
+}
+
+-(BOOL)areMethodOptionsValid:(NSDictionary*)options {
+    BOOL isValid = YES;
+    
+    if ([options objectForKey:@"tags"] && isValid) {
+        if (![self isTagsValid:options[@"tags"]]) {
+            isValid = NO;
+        }
+    }
+    
+    if ([options objectForKey:@"agg"] && isValid) {
+        if (![self isAggValid:options[@"agg"]]) {
+            isValid = NO;
+        }
+    }
+    
+    if ([options objectForKey:@"agg_freq"] && isValid) {
+        if (![self isAggFreqValid:options[@"agg_freq"]]) {
+            isValid = NO;
+        }
+    }
+    
+    return isValid;
 }
 
 -(NSString*)metricBuilderWithType:(NSString*)type name:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
@@ -252,31 +280,49 @@
 
 #pragma mark - Properties setters
 
-- (void)setDefaults:(NSDictionary *)defaults {
-    _defaults = [[NSMutableDictionary alloc]initWithCapacity:kImplementedMethods.count];
-    
-    for (NSString* method in kImplementedMethods) {
-        if (defaults[method]) {
-            _defaults[method] = [[NSMutableDictionary alloc] init];
-            
-            if (defaults[method][@"tags"]) {
-                _defaults[method][@"tags"] = defaults[method][@"tags"];
-            }
-            if (defaults[method][@"agg"]) {
-                _defaults[method][@"agg"] = defaults[method][@"agg"];
-            }
-            if (defaults[method][@"agg_freq"]) {
-                _defaults[method][@"agg_freq"] = defaults[method][@"agg_freq"];
+- (void)setDefaults:(id)defaults {
+    if (![defaults isKindOfClass:[NSDictionary class]]) {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting defaults: should be a NSDictionary." userInfo:nil];
+    } else {
+        _defaults = [[NSMutableDictionary alloc]initWithCapacity:[defaults count]];
+        
+        for (NSString* method in kImplementedMethods) {
+            if (defaults[method]) {
+                _defaults[method] = [[NSMutableDictionary alloc] init];
+                
+                if ([defaults[method] objectForKey:@"tags"]) {
+                    if ([self isTagsValid:defaults[method][@"tags"]]) {
+                        _defaults[method][@"tags"] = defaults[method][@"tags"];
+                    } else {
+                        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:[NSString stringWithFormat:@"Error setting defaults.tags on method %@", method] userInfo:nil];
+                    }
+                }
+                if ([defaults[method] objectForKey:@"agg"]) {
+                    if ([self isAggValid:defaults[method][@"agg"]]) {
+                        _defaults[method][@"agg"] = defaults[method][@"agg"];
+                    } else {
+                        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:[NSString stringWithFormat:@"Error setting defaults.agg on method %@", method] userInfo:nil];
+                    }
+                }
+                if ([defaults[method] objectForKey:@"agg_freq"]) {
+                    if ([self isAggFreqValid:defaults[method][@"agg_freq"]]) {
+                        _defaults[method][@"agg_freq"] = defaults[method][@"agg_freq"];
+                    } else {
+                        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:[NSString stringWithFormat:@"Error setting defaults.aggFreq on method %@", method] userInfo:nil];
+                    }
+                }
             }
         }
     }
 }
 
-- (void)setSampleRate:(NSNumber *)sampleRate {
-    if ([sampleRate intValue] > 0 && [sampleRate intValue] < 101) {
-        _sampleRate = sampleRate;
+- (void)setSampleRate:(id)sampleRate {
+    if (![sampleRate isKindOfClass:[NSString class]]) {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting sample rate: should be a NSNumber." userInfo:nil];
+    } else if ([sampleRate intValue] < 0 || [sampleRate intValue] > 101) {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting sample rate: should be in rage [1, 100]." userInfo:nil];
     } else {
-        [_logger logError:@"Sample rate must be in rage [1, 100]."];
+       _sampleRate = sampleRate;
     }
 }
 
@@ -284,7 +330,103 @@
     if (transport == SFClientTransportUDP || transport == SFClientTransportAPI) {
         _transport = transport;
     } else {
-        [_logger logError:@"Transport must be SFClientTransportUDP or SFClientTransportAPI."];
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting transport: should be SFClientTransportUDP or SFClientTransportAPI." userInfo:nil];
+    }
+}
+
+-(void)setTags:(id)tags {
+    if ([self isTagsValid:tags]) {
+        _tags = tags;
+    } else {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting tags: should be a NSDictionary." userInfo:nil];
+    }
+}
+
+-(void)setHost:(id)host {
+    if ([host isKindOfClass:[NSString class]]) {
+        _host = host;
+    } else {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting host: should be a NSString." userInfo:nil];
+    }
+}
+
+-(void)setPort:(id)port {
+    if ([port isKindOfClass:[NSString class]]) {
+        _port = port;
+    } else {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting port: should be a NSString." userInfo:nil];
+    }
+}
+
+-(void)setSecure:(id)secure {
+    if ([secure isKindOfClass:[NSNumber class]]) {
+        _secure = secure;
+    } else {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting secure: should be a NSNumber (0 or 1)." userInfo:nil];
+    }
+}
+
+-(void)setTimeout:(id)timeout {
+    if ([timeout isKindOfClass:[NSNumber class]]) {
+        _timeout = timeout;
+    } else {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting timeout: should be a NSNumber (unit is ms)." userInfo:nil];
+    }
+}
+
+-(void)setToken:(id)token {
+    if ([token isKindOfClass:[NSString class]]) {
+        _token = token;
+    } else {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting token: should be a NSString." userInfo:nil];
+    }
+}
+
+-(void)setApp:(id)app {
+    if ([app isKindOfClass:[NSString class]]) {
+        _app = app;
+    } else {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting app: should be a NSString." userInfo:nil];
+    }
+}
+
+-(void)setDryrun:(id)dryrun {
+    if ([dryrun isKindOfClass:[NSNumber class]]) {
+        _dryrun = dryrun;
+    } else {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting dryrun: should be a NSNumber (0 or 1)." userInfo:nil];
+    }
+}
+
+-(void)setNamespace:(id)namespace {
+    if ([namespace isKindOfClass:[NSString class]]) {
+        _namespace = namespace;
+    } else {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting namespace: should be a NSString." userInfo:nil];
+    }
+}
+
+-(void)setFlushSize:(id)flushSize {
+    if ([flushSize isKindOfClass:[NSString class]]) {
+        _flushSize = flushSize;
+    } else {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting flush size: should be a NSNumber." userInfo:nil];
+    }
+}
+
+-(void)setFlushInterval:(id)flushInterval {
+    if ([flushInterval isKindOfClass:[NSString class]]) {
+        _flushInterval = flushInterval;
+    } else {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting flush interval: should be a NSNumber." userInfo:nil];
+    }
+}
+
+-(void)setLogger:(id)logger {
+    if ([logger isKindOfClass:[DDAbstractLogger class]] || logger == nil) {
+        _logger = [[SFLogger alloc] initWithDDLoggerInstance:logger loggerLevel:-1];
+    } else {
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting logger: should be an instance of a custom implementation of DDAbstractLogger<DDLogger> or a default implementation like: [DDTTYLogger sharedInstance] or [DDASLLogger sharedInstance]. Read CocoaLumberjack documentation to get more information." userInfo:nil];
     }
 }
 
@@ -294,7 +436,7 @@
     
     // Logger
     [self setProperty:@"logger" fromConfig:config WithRules:propertiesRules[@"logger"] AndWithSetter:^(id value) {
-        [blocksafeSelf setLogger:[[SFLogger alloc] initWithDDLoggerInstance:value loggerLevel:-1]];
+        [blocksafeSelf setLogger:value];
     }];
     
     // Host
@@ -367,7 +509,7 @@
         [blocksafeSelf setDefaults:value];
     }];
     
-    _isConfigCorrect = YES;
+    _isConfigValid = YES;
 }
 
 #pragma mark - Private Methods
@@ -487,6 +629,31 @@
     [set addObjectsFromArray:arrB];
     
     return [[set allObjects] mutableCopy];
+}
+
+-(BOOL)isTagsValid:(id) tags {
+    return [tags isKindOfClass:[NSDictionary class]];
+}
+
+-(BOOL)isAggFreqValid:(id) aggFreq {
+    return [aggFreq isKindOfClass:[NSNumber class]] && [kSupportedAggFreq containsObject:aggFreq];
+}
+
+-(BOOL)isAggValid:(id) aggs {
+    BOOL isValid = YES;
+    
+    if ([aggs isKindOfClass:[NSArray class]]) {
+        for (NSString* agg in aggs) {
+            if (![kSupportedAgg containsObject:agg]) {
+                isValid = NO;
+                break;
+            }
+        }
+    } else {
+        isValid = NO;
+    }
+    
+    return isValid;
 }
 
 FOUNDATION_STATIC_INLINE NSDictionary* getPropertiesRules() {

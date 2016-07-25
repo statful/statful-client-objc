@@ -29,7 +29,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface SFConstants : NSObject
-
+//Primitive Types
 typedef NS_ENUM(short, SFClientTransport) {
     SFClientTransportTCP = 0,
     SFClientTransportUDP,
@@ -41,15 +41,12 @@ typedef NS_ENUM(NSUInteger, SFLoggerLogLevel) {
     SFLoggerLogLevelDebug = DDLogLevelDebug,
     SFLoggerLogLevelVerbose = DDLogLevelVerbose
 };
-
-//Primitive Types
 FOUNDATION_EXTERN NSString* const kApiPath;
 FOUNDATION_EXTERN NSString* const kDefaultNamespace;
 FOUNDATION_EXTERN NSString* const kUserAgent;
 FOUNDATION_EXTERN SFLoggerLogLevel kDefaultLoggerLevel;
 FOUNDATION_EXTERN NSString* const kDefaultPort;
 FOUNDATION_EXTERN NSString* const kDefaultHost;
-
 
 //OBJ-C Objects
 FOUNDATION_EXTERN NSDictionary* kDefaultGlobalTags;
@@ -65,7 +62,8 @@ FOUNDATION_EXTERN NSNumber* kDefaultTimeout;
 FOUNDATION_EXTERN NSNumber* kDefaultSecure;
 FOUNDATION_EXTERN NSDictionary* kDefaultTagsByMethod;
 FOUNDATION_EXTERN NSDictionary* kDefaultAggByMethod;
-
+FOUNDATION_EXTERN NSArray* kSupportedAgg;
+FOUNDATION_EXTERN NSArray* kSupportedAggFreq;
 @end
 
 NS_ASSUME_NONNULL_END
