@@ -47,19 +47,19 @@
     _sf_config = @{
                    @"app": @"statful",
                    @"defaults": @{},
-                   @"dryrun" : [NSNumber numberWithBool:YES],
-                   @"flush_size" : [NSNumber numberWithInt:10],
-                   @"flush_interval" : [NSNumber numberWithInt:10],
+                   @"dryrun" : @YES,
+                   @"flush_size" : @10,
+                   @"flush_interval" : @10,
                    @"host" : @"123.456.789.123",
                    @"logger": [DDTTYLogger sharedInstance],
                    @"port" : @"123",
-                   @"sample_rate" : [NSNumber numberWithInt:50],
-                   @"secure" : [NSNumber numberWithBool:NO],
+                   @"sample_rate" : @50,
+                   @"secure" : @NO,
                    @"tags": @{@"gt1":@"tag_1", @"gt1":@"tag_2"},
-                   @"timeout": [NSNumber numberWithInt:1000],
+                   @"timeout": @1000,
                    @"token": @"statful-token",
                    @"transport": @(SFClientTransportUDP),
-                   @"secure" : [NSNumber numberWithBool:NO],
+                   @"secure" : @NO,
                    @"namespace" : @"application"
                    };
     
@@ -266,6 +266,113 @@
 }
 
 -(void)testDefaultConfigValues {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    SFClient* badConfigSFClient;
+    
+    // Invalid Tags
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"tags":@[]
+                                            }
+                                    };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNil(badConfigSFClient);
+    
+    // Valid Tags
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"tags":@{@"gt1":@"t1"}
+                                                }
+                                     };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNotNil(badConfigSFClient);
+    
+    // Invalid Aggs
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"agg":@{}
+                                                }
+                                     };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNil(badConfigSFClient);
+    
+    // Invalid Aggs
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"agg":@[@"null_Agg"]
+                                                }
+                                     };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNil(badConfigSFClient);
+    
+    // Valid Agg
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"agg":@[@"last"]
+                                                }
+                                     };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNotNil(badConfigSFClient);
+    
+    // Invalid AggFreq
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"agg_freq":@{}
+                                                }
+                                     };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNil(badConfigSFClient);
+    
+    // Valid AggFreq
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"agg_freq":@10
+                                                }
+                                     };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNotNil(badConfigSFClient);
+    
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"agg_freq":@30
+                                                }
+                                     };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNotNil(badConfigSFClient);
+    
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"agg_freq":@60
+                                                }
+                                     };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNotNil(badConfigSFClient);
+    
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"agg_freq":@120
+                                                }
+                                     };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNotNil(badConfigSFClient);
+    
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"agg_freq":@180
+                                                }
+                                     };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNotNil(badConfigSFClient);
+    
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"agg_freq":@300
+                                                }
+                                     };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNotNil(badConfigSFClient);
+    
+    // Valid Defaults Output
+    changedSFConfig[@"defaults"] = @{@"timer":@{@"tags":@{@"gt1":@"t1"},
+                                                @"agg":kSupportedAgg,
+                                                @"agg_freq": @300},
+                                     @"invalidAgg":@{@"agg": kSupportedAgg}
+                                     };
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNotNil(badConfigSFClient);
+    
+    NSDictionary *finalExpectedDictionary = @{@"timer":@{@"tags":@{@"gt1":@"t1"},
+                                                         @"agg":kSupportedAgg,
+                                                         @"agg_freq": @300}};
+    XCTAssert([badConfigSFClient.defaults isEqualToDictionary:finalExpectedDictionary]);
+
+}
+
+-(void)testMethods {
+    
+}
+
+-(void)testStart {
+    
+}
+
+-(void)testStop {
     
 }
 
