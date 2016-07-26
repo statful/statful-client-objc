@@ -29,6 +29,7 @@
 @property(strong, nonatomic) SFClient* default_sfc;
 @property(strong, nonatomic) SFClient* default_sfc_with_required;
 @property(strong, nonatomic) SFClient* sf_client;
+@property(strong, nonatomic) SFClient* sf_client_instance_constructor;
 @property(strong, nonatomic) NSDictionary* sf_config;
 @end
 
@@ -53,7 +54,7 @@
                    @"host" : @"123.456.789.123",
                    @"logger": [DDTTYLogger sharedInstance],
                    @"port" : @"123",
-                   @"sample_rate" : @50,
+                   @"sample_rate" : @100,
                    @"secure" : @NO,
                    @"tags": @{@"gt1":@"tag_1", @"gt1":@"tag_2"},
                    @"timeout": @1000,
@@ -64,6 +65,7 @@
                    };
     
     _sf_client = [SFClient clientWithConfig:_sf_config];
+    _sf_client_instance_constructor = [[SFClient alloc] initWithConfig:_sf_config];
 }
 
 - (void)tearDown {
@@ -75,6 +77,7 @@
     XCTAssertNil(_default_sfc);
     XCTAssertTrue([_default_sfc_with_required isKindOfClass:[SFClient class]]);
     XCTAssertTrue([_sf_client isKindOfClass:[SFClient class]]);
+    XCTAssertTrue([_sf_client_instance_constructor isKindOfClass:[SFClient class]]);
 }
 
 - (void)testSampleRateRange {
@@ -364,60 +367,58 @@
 
 }
 
--(void)testMethods {
-    
-}
-
 -(void)testStart {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"transport"] = nil;
+    SFClient* badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNil(badConfigSFClient);
     
+    XCTAssertNotNil(_sf_client);
+    XCTAssertFalse(_sf_client.isStarted);
+    XCTAssertTrue(_sf_client.isConfigValid);
+    
+    [_sf_client timerWithName:@"testTimer" value:@0];
+    XCTAssertEqual(_sf_client.metricsBuffer.count, 1);
+    
+    [_sf_client start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([_sf_client.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    XCTAssertEqual(_sf_client.metricsBuffer.count, 0);
+    XCTAssertTrue(_sf_client.isStarted);
+    
+    [_sf_client stop];
 }
 
 -(void)testStop {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"transport"] = nil;
+    SFClient* badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNil(badConfigSFClient);
+    
+    XCTAssertNotNil(_sf_client);
+    XCTAssertFalse(_sf_client.isStarted);
+    XCTAssertTrue(_sf_client.isConfigValid);
+    
+    [_sf_client start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([_sf_client.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    [_sf_client timerWithName:@"testTimer" value:@0];
+    XCTAssertEqual(_sf_client.metricsBuffer.count, 1);
+    
+    [_sf_client stop];
+    XCTAssertEqual(_sf_client.metricsBuffer.count, 0);
+    XCTAssertFalse(_sf_client.isStarted);
     
 }
 
-/*
- - (void)testTimer {
- XCTAssertNil(_default_sfc);
- XCTAssertTrue([_sf_client isKindOfClass:[SFClient class]]);
- 
- NSLog(@"timer time");
- 
- NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow: 3.0 ];
- 
- NSLog(@"about to wait");
- [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
- NSLog(@"wait time is over");
- 
- [[NSRunLoop currentRunLoop] run];
- }
- 
- // Make that work exposing SFClient.h+Private with private properties
- - (void)testDefaultConstructor {
-    XCTAssertEqual(_default_sfc.host, @"127.0.0.1");
-    XCTAssertEqual(_default_sfc.port, @"2013");
-    XCTAssertEqual(_default_sfc.secure, @YES);
-    XCTAssertEqual(_default_sfc.timeout, @2000);
-    XCTAssertEqual(_default_sfc.dryrun, @NO);
-    XCTAssertEqual(_default_sfc.tags, @[]);
-    XCTAssertEqual(_default_sfc.sampleRate, @100);
-    XCTAssertEqual(_default_sfc.flushSize, @10);
-}
 
-- (void)testCustomConstructor {
-    XCTAssertEqual(_sf_client.app, @"statful");
-    XCTAssertEqual(_sf_client.dryrun, @YES);
-    XCTAssertEqual(_sf_client.flushSize, @12);
-    XCTAssertEqual(_sf_client.host, @"123.456.789.123");
-    XCTAssertEqual(_sf_client.port, @"123");
-    XCTAssertEqual(_sf_client.sampleRate, @50);
-    XCTAssertEqual(_sf_client.secure, @NO);
-    XCTAssertEqual(_sf_client.timeout, @1000);
-    XCTAssertEqual(_sf_client.token, @"statful-token");
-    XCTAssertEqual(_sf_client.transport, SFClientTransportUDP);
+
+-(void)testMethods {
     
-    BOOL tags_arrays_compare_result = [_sf_client.tags isEqualToArray:@[@"tag_1", @"tag_2"]];
-    XCTAssertEqual(tags_arrays_compare_result, true);
-}*/
+}
 
 @end

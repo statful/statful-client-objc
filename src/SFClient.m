@@ -56,6 +56,7 @@
     if (self = [super init]) {
         _isStarted = NO;
         _isConfigValid = NO;
+        _metricsBuffer = [[NSMutableArray alloc] init];
         
         @try {
             [self validateAndSetConfig:config];
@@ -112,7 +113,7 @@
 }
 
 -(void)initFlushTimer {
-    _flushTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(flushBufferWithTimer) userInfo:nil repeats:YES];
+    self.flushTimer = [NSTimer scheduledTimerWithTimeInterval:([self.flushInterval floatValue]/1000.0f) target:self selector:@selector(flushBufferWithTimer) userInfo:nil repeats:YES];
     [[NSRunLoop currentRunLoop] addTimer:_flushTimer forMode:NSDefaultRunLoopMode];
 }
 
@@ -128,8 +129,7 @@
                 // Init the transport layer and the flush rate timer
                 [self initTransportLayer];
                 [self initFlushTimer];
-                [[NSRunLoop currentRunLoop] run];
-                
+            
                 _isStarted = YES;
                 startedSucessfuly = YES;
                 [_logger logDebug:@"Client was started."];
@@ -525,7 +525,7 @@
 
 -(void)flushMetrics:(NSString*)metrics {
     if (_isStarted) {
-        if (self.dryrun) {
+        if (_dryrun) {
             [_logger logDebug:@"%@",metrics];
         } else {
             NSData *metricsData = [metrics dataUsingEncoding:NSUTF8StringEncoding];
@@ -551,7 +551,7 @@
     NSMutableDictionary* methodGlobalDefaults = _defaults[type];
     
     //Apply Global Tags and App tag if app was defined on client constructor
-    configOptions[@"tags"] = _tags;
+    configOptions[@"tags"] = [NSMutableDictionary dictionaryWithDictionary:_tags];
     if ([_app length] > 0) {
         [configOptions[@"tags"] addEntriesFromDictionary:@{@"app": _app}];
     }
