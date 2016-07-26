@@ -46,7 +46,7 @@
     
     // Custom statful client configuration
     _sf_config = @{
-                   @"app": @"statful",
+                   
                    @"defaults": @{},
                    @"dryrun" : @YES,
                    @"flush_size" : @10,
@@ -56,7 +56,7 @@
                    @"port" : @"123",
                    @"sample_rate" : @100,
                    @"secure" : @NO,
-                   @"tags": @{@"gt1":@"tag_1", @"gt1":@"tag_2"},
+                   @"tags": @{@"gt1":@"tag_1"},
                    @"timeout": @1000,
                    @"token": @"statful-token",
                    @"transport": @(SFClientTransportUDP),
@@ -375,6 +375,12 @@
 
 }
 
+-(void)testCurrentTimestamp {
+    NSString* currentTimestamp = [NSString stringWithFormat:@"%lu", [@([[NSDate date] timeIntervalSince1970]) integerValue]];
+    BOOL assertCurrentTimestamp = [currentTimestamp isEqualToString:CURRENT_TIMESTAMP];
+    XCTAssert(assertCurrentTimestamp);
+}
+
 -(void)testStart {
     NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
     changedSFConfig[@"transport"] = nil;
@@ -395,6 +401,7 @@
     
     XCTAssertEqual(_sf_client.metricsBuffer.count, 0);
     XCTAssertTrue(_sf_client.isStarted);
+    XCTAssertTrue(_sf_client.flushTimer.isValid);
     
     [_sf_client stop];
 }
@@ -420,6 +427,7 @@
     [_sf_client stop];
     XCTAssertEqual(_sf_client.metricsBuffer.count, 0);
     XCTAssertFalse(_sf_client.isStarted);
+    XCTAssertFalse(_sf_client.flushTimer.isValid);
     
 }
 
@@ -504,8 +512,271 @@
     [changedSFClient stop];
 }
 
--(void)testMethods {
+-(void)testBaseMetricMethodAllDefaults {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @100;
+    changedSFConfig[@"tags"] = @{};
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    NSString* timestampToSet = @"123";
     
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    // Test for invalid type
+    [changedSFClient methodWithType:@"unknownType" name:@"testUnkownType" value:@0 options:nil];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 0);
+    
+    // Test for invalid options
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"tags":@[]}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 0);
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"agg":@{}}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 0);
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"agg_freq":@0}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 0);
+    
+    // Test a valid method call: all defaults
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"timestamp": timestampToSet}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,unit=ms 0 123 avg,p90,count,10"]);
+    
+    [changedSFClient stop];
 }
+
+-(void)testBaseMetricMethodWithApp {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @100;
+    changedSFConfig[@"tags"] = @{};
+    changedSFConfig[@"app"] = @"statful";
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    NSString* timestampToSet = @"123";
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    // Test app option
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"timestamp": timestampToSet}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,app=statful,unit=ms 0 123 avg,p90,count,10"]);
+    
+    [changedSFClient stop];
+}
+
+-(void)testBaseMetricMethodWithAppAndGeneralTags {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @100;
+    changedSFConfig[@"app"] = @"statful";
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    NSString* timestampToSet = @"123";
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    // Test app option
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"timestamp": timestampToSet}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,gt1=tag_1,app=statful,unit=ms 0 123 avg,p90,count,10"]);
+    
+    [changedSFClient stop];
+}
+
+-(void)testBaseMetricMethodWithAppAndGeneralTagsAndPassedTag {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @100;
+    changedSFConfig[@"app"] = @"statful";
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    NSString* timestampToSet = @"123";
+    NSDictionary* tagsToPass = @{@"passed_tag_1": @"1"};
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    // Test app option
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"tags": tagsToPass, @"timestamp": timestampToSet}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,app=statful,gt1=tag_1,unit=ms,passed_tag_1=1 0 123 avg,p90,count,10"]);
+    
+    [changedSFClient stop];
+}
+
+
+-(void)testBaseMetricMethodWithAppAndGeneralTagsAndGeneralDefaultTags {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @100;
+    changedSFConfig[@"app"] = @"statful";
+    changedSFConfig[@"defaults"] = @{@"timer": @{@"tags": @{@"g_default_tag": @"1"}}};
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    NSString* timestampToSet = @"123";
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    // Test app option
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"timestamp": timestampToSet}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,gt1=tag_1,app=statful,g_default_tag=1 0 123 avg,p90,count,10"]);
+    
+    [changedSFClient stop];
+}
+
+-(void)testBaseMetricMethodWithAppAndGeneralTagsAndGeneralDefaultsAndPassedTags {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @100;
+    changedSFConfig[@"app"] = @"statful";
+    changedSFConfig[@"defaults"] = @{@"timer": @{@"tags": @{@"g_default_tag": @"1"}}};
+    NSDictionary* tagsToPass = @{@"passed_tag_1": @"1"};
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    NSString* timestampToSet = @"123";
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    // Test app option
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"tags":tagsToPass, @"timestamp": timestampToSet}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,app=statful,g_default_tag=1,gt1=tag_1,passed_tag_1=1 0 123 avg,p90,count,10"]);
+    
+    [changedSFClient stop];
+}
+
+-(void)testBaseMetricMethodWithAppAndGeneralTagsAndGeneralDefaultsAndPassedTagsOverride {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @100;
+    changedSFConfig[@"app"] = @"statful";
+    changedSFConfig[@"defaults"] = @{@"timer": @{@"tags": @{@"override_tag": @"1"}}};
+    NSDictionary* tagsToPass = @{@"override_tag": @"2"};
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    NSString* timestampToSet = @"123";
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    // Test app option
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"tags":tagsToPass, @"timestamp": timestampToSet}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,gt1=tag_1,app=statful,override_tag=2 0 123 avg,p90,count,10"]);
+    
+    [changedSFClient stop];
+}
+
+-(void)testBaseMetricMethodWithAggFreqWithoutAgg {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @100;
+    changedSFConfig[@"app"] = @"statful";
+    changedSFConfig[@"defaults"] = @{@"timer": @{@"agg": @[]}};
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    NSString* timestampToSet = @"123";
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    // Test app option
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"agg":@[], @"timestamp": timestampToSet}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,gt1=tag_1,app=statful,unit=ms 0 123"]);
+    
+    [changedSFClient stop];
+}
+
+-(void)testBaseMetricMethodWithAggFreq {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @100;
+    changedSFConfig[@"app"] = @"statful";
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    NSString* timestampToSet = @"123";
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    // Test app option
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"agg_freq":@60, @"timestamp": timestampToSet}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,gt1=tag_1,app=statful,unit=ms 0 123 avg,p90,count,60"]);
+    
+    [changedSFClient stop];
+}
+
+-(void)testBaseMetricMethodWithAppAndGeneralDefaultAgg {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @100;
+    changedSFConfig[@"app"] = @"statful";
+    changedSFConfig[@"defaults"] = @{@"timer": @{@"agg": @[@"last"]}};
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    NSString* timestampToSet = @"123";
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    // Test app option
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"timestamp": timestampToSet}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,gt1=tag_1,app=statful,unit=ms 0 123 last,10"]);
+    
+    [changedSFClient stop];
+}
+
+-(void)testBaseMetricMethodWithAppAndGeneralDefaultAggAndPassedAgg {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @100;
+    changedSFConfig[@"app"] = @"statful";
+    changedSFConfig[@"defaults"] = @{@"timer": @{@"agg": @[@"last"]}};
+    NSArray* aggsToPass = @[@"count"];
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    NSString* timestampToSet = @"123";
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    // Test app option
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"agg":aggsToPass, @"timestamp": timestampToSet}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,gt1=tag_1,app=statful,unit=ms 0 123 count,last,10"]);
+    
+    [changedSFClient stop];
+}
+
+-(void)testBaseMetricMethodWithAppAndEqualsGeneralDefaultAggAndPassedAgg {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @100;
+    changedSFConfig[@"app"] = @"statful";
+    changedSFConfig[@"defaults"] = @{@"timer": @{@"agg": @[@"count"]}};
+    NSArray* aggsToPass = @[@"count"];
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    NSString* timestampToSet = @"123";
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    // Test app option
+    [changedSFClient methodWithType:@"timer" name:@"testTimer" value:@0 options:@{@"agg":aggsToPass, @"timestamp": timestampToSet}];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,gt1=tag_1,app=statful,unit=ms 0 123 count,10"]);
+    
+    [changedSFClient stop];
+}
+
 
 @end

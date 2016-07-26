@@ -151,6 +151,7 @@
     
     if (_isStarted) {
         [self flushBuffer:YES];
+        [self.flushTimer invalidate];
         _isStarted = NO;
         stoppedSucessfuly = YES;
         [_logger logDebug:@"Client was stopped."];
@@ -189,8 +190,12 @@
 
 -(void)methodWithType:(NSString*)type name:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
     if ([self areMethodOptionsValid:options]) {
-        NSDictionary *processedOptions = [self calculateConfigForType:type withOptions:options];
-        [self putWithType:type name:name value:value options:processedOptions];
+        if ([kImplementedMethods containsObject:type]) {
+            NSDictionary *processedOptions = [self calculateConfigForType:type withOptions:options];
+            [self putWithType:type name:name value:value options:processedOptions];
+        } else {
+            [_logger logError:@"Metric not sent. Method type is not supported."];
+        }
     } else {
         [_logger logError:@"Metric not sent. Please review the following: aggregations, aggregation frequency and tags."];
     }
@@ -213,6 +218,18 @@
     
     if ([options objectForKey:@"agg_freq"] && isValid) {
         if (![self isAggFreqValid:options[@"agg_freq"]]) {
+            isValid = NO;
+        }
+    }
+    
+    if ([options objectForKey:@"namespace"] && isValid) {
+        if (![self isNamespaceValid:options[@"namespace"]]) {
+            isValid = NO;
+        }
+    }
+    
+    if ([options objectForKey:@"timestamp"] && isValid) {
+        if (![self isTimestampValid:options[@"timestamp"]]) {
             isValid = NO;
         }
     }
@@ -563,7 +580,7 @@
     if ([methodGlobalDefaults objectForKey:@"tags"]) {
         [configOptions[@"tags"] addEntriesFromDictionary:methodGlobalDefaults[@"tags"]];
     } else {
-        configOptions[@"tags"] = kDefaultTagsByMethod[type];
+        [configOptions[@"tags"] addEntriesFromDictionary:kDefaultTagsByMethod[type]];
     }
     
     if ([methodGlobalDefaults objectForKey:@"agg"]) {
@@ -636,6 +653,14 @@
     }
     
     return isValid;
+}
+
+-(BOOL)isNamespaceValid:(id) namespace {
+    return [namespace isKindOfClass:[NSString class]];
+}
+
+-(BOOL)isTimestampValid:(id) timestamp {
+    return [timestamp isKindOfClass:[NSString class]];
 }
 
 FOUNDATION_STATIC_INLINE NSDictionary* getPropertiesRules() {

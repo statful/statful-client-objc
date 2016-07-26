@@ -43,4 +43,6 @@
 @property (strong, nonatomic) NSMutableDictionary *defaults;
 @property (strong, nonatomic) NSTimer *flushTimer;
 
+-(void)methodWithType:(NSString*)type name:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options;
+
 @end
