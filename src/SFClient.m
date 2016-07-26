@@ -389,7 +389,7 @@
 }
 
 -(void)setFlushSize:(id)flushSize {
-    if ([flushSize isKindOfClass:[NSNumber class]]) {
+    if ([flushSize isKindOfClass:[NSNumber class]] && [flushSize isGreaterThan:@0]) {
         _flushSize = flushSize;
     } else {
         @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting flush size: should be a NSNumber." userInfo:nil];
@@ -397,10 +397,10 @@
 }
 
 -(void)setFlushInterval:(id)flushInterval {
-    if ([flushInterval isKindOfClass:[NSNumber class]]) {
+    if ([flushInterval isKindOfClass:[NSNumber class]] && [flushInterval isGreaterThan:@0]) {
         _flushInterval = flushInterval;
     } else {
-        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting flush interval: should be a NSNumber." userInfo:nil];
+        @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting flush interval: should be a NSNumber greater than 0 (time unit is ms)." userInfo:nil];
     }
 }
 

@@ -228,12 +228,20 @@
     badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
     XCTAssertNil(badConfigSFClient);
     
+    changedSFConfig[@"flush_size"] = @0;
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNil(badConfigSFClient);
+    
     changedSFConfig[@"flush_size"] = @10;
     badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
     XCTAssertNotNil(badConfigSFClient);
     
     // Flush interval
     changedSFConfig[@"flush_interval"] = @"";
+    badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
+    XCTAssertNil(badConfigSFClient);
+    
+    changedSFConfig[@"flush_interval"] = @0;
     badConfigSFClient = [SFClient clientWithConfig:changedSFConfig];
     XCTAssertNil(badConfigSFClient);
     
@@ -415,7 +423,86 @@
     
 }
 
+-(void)testCounterMethod {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @500;
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    [changedSFClient counterWithName:@"testCounter" value:@0];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    
+    [changedSFClient counterWithName:@"testCounter" value:@0 options:nil];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 2);
+    
+    NSString* generatedMetric1 = [changedSFClient.metricsBuffer objectAtIndex:0];
+    NSString* generatedMetric2 = [changedSFClient.metricsBuffer objectAtIndex:1];
+    XCTAssert([generatedMetric1 isEqualToString:generatedMetric2]);
+    
+    
+    XCTAssert([[[generatedMetric1 componentsSeparatedByString:@"."] objectAtIndex:1] isEqualToString:@"counter"]);
+    XCTAssert([[[generatedMetric2 componentsSeparatedByString:@"."] objectAtIndex:1] isEqualToString:@"counter"]);
+    
+    [changedSFClient stop];
+}
 
+-(void)testGaugeMethod {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @500;
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    [changedSFClient gaugeWithName:@"testGauge" value:@0];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    
+    [changedSFClient gaugeWithName:@"testGauge" value:@0 options:nil];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 2);
+    
+    NSString* generatedMetric1 = [changedSFClient.metricsBuffer objectAtIndex:0];
+    NSString* generatedMetric2 = [changedSFClient.metricsBuffer objectAtIndex:1];
+    XCTAssert([generatedMetric1 isEqualToString:generatedMetric2]);
+    
+    
+    XCTAssert([[[generatedMetric1 componentsSeparatedByString:@"."] objectAtIndex:1] isEqualToString:@"gauge"]);
+    XCTAssert([[[generatedMetric2 componentsSeparatedByString:@"."] objectAtIndex:1] isEqualToString:@"gauge"]);
+    
+    [changedSFClient stop];
+}
+
+-(void)testTimerMethod {
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"flush_interval"] = @500;
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    
+    [changedSFClient start];
+    
+    NSDate *runUntil = [NSDate dateWithTimeIntervalSinceNow:([changedSFClient.flushInterval floatValue]/1000.0f)];
+    [[NSRunLoop currentRunLoop] runUntilDate:runUntil];
+    
+    [changedSFClient timerWithName:@"testTimer" value:@0];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
+    
+    [changedSFClient timerWithName:@"testTimer" value:@0 options:nil];
+    XCTAssertEqual(changedSFClient.metricsBuffer.count, 2);
+    
+    NSString* generatedMetric1 = [changedSFClient.metricsBuffer objectAtIndex:0];
+    NSString* generatedMetric2 = [changedSFClient.metricsBuffer objectAtIndex:1];
+    XCTAssert([generatedMetric1 isEqualToString:generatedMetric2]);
+    
+    
+    XCTAssert([[[generatedMetric1 componentsSeparatedByString:@"."] objectAtIndex:1] isEqualToString:@"timer"]);
+    XCTAssert([[[generatedMetric2 componentsSeparatedByString:@"."] objectAtIndex:1] isEqualToString:@"timer"]);
+    
+    [changedSFClient stop];
+}
 
 -(void)testMethods {
     
