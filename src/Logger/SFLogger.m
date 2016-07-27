@@ -37,20 +37,8 @@ static DDLogLevel ddLogLevel = (DDLogLevel)SFLoggerLogLevelError;
 - (instancetype)initWithDDLoggerInstance:(DDAbstractLogger <DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel {
     
     if (self = [super init]) {
-        if (loggerLevel > SFLoggerLogLevelError && loggerLevel < SFLoggerLogLevelVerbose) {
-            _loggerLevel = loggerLevel;
-            ddLogLevel = (DDLogLevel)loggerLevel;
-        } else {
-            _loggerLevel = kDefaultLoggerLevel;
-            ddLogLevel = (DDLogLevel)_loggerLevel;
-        }
-        if (logger) {
-            _logger = logger;
-            [DDLog addLogger:logger withLevel:(DDLogLevel)loggerLevel];
-        } else {
-            _logger = kDefaultLogger;
-            [DDLog addLogger:_logger];
-        }
+        self.logger = logger;
+        self.loggerLevel = loggerLevel;
     }
     
     return self;
@@ -58,6 +46,26 @@ static DDLogLevel ddLogLevel = (DDLogLevel)SFLoggerLogLevelError;
 
 - (instancetype)init {
     return [self initWithDDLoggerInstance:nil loggerLevel:-1];
+}
+
+-(void)setLogger:(DDAbstractLogger<DDLogger> *)logger {
+    if ([logger isKindOfClass:[DDAbstractLogger class]] && logger != nil) {
+        _logger = logger;
+        [DDLog addLogger:logger];
+    } else {
+        _logger = kDefaultLogger;
+        [DDLog addLogger:_logger];
+    }
+}
+
+-(void)setLoggerLevel:(SFLoggerLogLevel)loggerLevel {
+    if (loggerLevel > SFLoggerLogLevelError && loggerLevel < SFLoggerLogLevelVerbose) {
+        _loggerLevel = loggerLevel;
+        ddLogLevel = (DDLogLevel)loggerLevel;
+    } else {
+        _loggerLevel = kDefaultLoggerLevel;
+        ddLogLevel = (DDLogLevel)_loggerLevel;
+    }
 }
 
 #pragma mark - Public Methods

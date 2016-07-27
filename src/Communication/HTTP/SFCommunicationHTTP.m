@@ -68,12 +68,13 @@
         [requestSerializer setValue:kUserAgent forHTTPHeaderField:@"User-Agent"];
         [requestSerializer setValue:dictionary[@"token"] forHTTPHeaderField:@"M-Api-Token"];
         [requestSerializer setValue:@"text/plain; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
+        [requestSerializer setValue:@"text/plain; charset=utf-8" forHTTPHeaderField:@"Accept"];
         requestSerializer.timeoutInterval = [dictionary[@"timeout"] doubleValue];
         manager.requestSerializer = requestSerializer;
         
         AFHTTPResponseSerializer *responseSerializer = [AFHTTPResponseSerializer serializer];
         NSMutableSet *acceptableContentTypes = [responseSerializer.acceptableContentTypes mutableCopy];
-        [acceptableContentTypes addObject:@"application/text"];
+        [acceptableContentTypes addObject:@"text/plain; charset=utf-8"];
         responseSerializer.acceptableContentTypes = acceptableContentTypes;
         manager.responseSerializer = responseSerializer;
         
@@ -94,7 +95,6 @@
         
         NSMutableData *postBody = [NSMutableData data];
         [postBody appendData:metricsData];
-        
         [request setHTTPBody:postBody];
     }
     
