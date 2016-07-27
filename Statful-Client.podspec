@@ -1,9 +1,9 @@
 Pod::Spec.new do |s|
-  s.name     = 'Statful-Client'
-  s.version  = '0.0.1'
+  s.name     = 'StatfulClientObjc'
+  s.version  = '1.0.0'
   s.license  = 'MIT'
   s.summary  = 'Statful Client for iOS & macOS written in Objective-C.'
-  s.homepage = ''
+  s.homepage = 'http://statful.com'
   s.author   = { 'Tiago Ferreira' => 'tiago.ferreira@mindera.com' }
   s.source   = { :git => '', :tag => s.version }
 

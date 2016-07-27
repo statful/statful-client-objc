@@ -5,12 +5,6 @@
       location = "group:Pods/Pods.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:telemetron-client-objc.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:telemetron-client-objc.xcodeproj">
-   </FileRef>
-   <FileRef
       location = "group:statful-client-objc.xcodeproj">
    </FileRef>
 </Workspace>
