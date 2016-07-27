@@ -42,7 +42,7 @@ At this point you only need to include Statful Client into your project to start
 #import "SFClient.h"
 ```
 
-## Quick Start ##
+## Quick Start
 After installing Statful Client you are ready to use it. The quickest way is to do the following:
 
 ```objc
@@ -63,11 +63,11 @@ SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
 // Every metric in the buffer is sent when client stop is called
 [statfulClient stop];
 ```
-> **IMPORTANT** This configuration uses the default **host** and **port**. You can learn more about configuration in [Configurations](#configurations).
+> **IMPORTANT** This configuration uses the default **host** and **port**. You can learn more about configuration in [API Reference](#api-reference).
 
-## API Reference ## 
+## API Reference 
 
-### Client ###
+### Client
 
 * __host__ [optional] [default: '127.0.0.1']
 * __port__ [optional] [default: 2013]
@@ -82,17 +82,17 @@ SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
 * __flushSize__ [optional] [default: 10] - defines the periodicity of buffer flushes
 * __flushInterval__ [optional] [default: 0] - Defines an interval to flush the metrics
 
-#### Methods ####
-#### Properties ####
+#### Methods
+#### Properties
 
-### Logger ###
-#### Methods ####
-#### Properties ####
+### Logger
+#### Methods
+#### Properties
 
-## Examples ##
+## Examples
 You can find here some useful usage examples of the Statful Client. In the following examples is assumed you have already installed and included Statful Client in your project.
 
-### UDP Configuration ###
+### UDP Configuration
 
 ```objc
 NSDictionary *clientConfig = @{ @"transport":@(SFClientTransportUDP), 
@@ -103,7 +103,7 @@ NSDictionary *clientConfig = @{ @"transport":@(SFClientTransportUDP),
 SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
 ```
 
-### HTTP Configuration ###
+### HTTP Configuration
 
 ```objc
 NSDictionary *clientConfig = @{ @"transport":@(SFClientTransportAPI), 
@@ -115,12 +115,12 @@ NSDictionary *clientConfig = @{ @"transport":@(SFClientTransportAPI),
 SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
 ```
 
-### Logger Configuration ###
-### Defaults Configuration Per Method ###
-### Mixed Complete Configuration ###
-### Add metrics ###
+### Logger Configuration
+### Defaults Configuration Per Method
+### Mixed Complete Configuration
+### Add metrics
 
-## Still need help? ##
+## Still need help?
 If you are feeling that you're still needing help, please visit our oficial full [Statful Documentation](http://statful.com/docs) page.
 
 ## Authors
