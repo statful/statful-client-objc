@@ -778,4 +778,20 @@
     [changedSFClient stop];
 }
 
+-(void)testInitTransport {
+    [_sf_client start];
+    XCTAssert([_sf_client.connection isKindOfClass:[SFCommunicationSocketUDP class]]);
+    [_sf_client stop];
+    
+    
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"transport"] = @(SFClientTransportAPI);
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    
+    
+    [changedSFClient start];
+    XCTAssert([changedSFClient.connection isKindOfClass:[SFCommunicationHTTP class]]);
+    [changedSFClient stop];
+}
+
 @end

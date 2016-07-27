@@ -22,11 +22,16 @@
 //
 
 #import "SFClient.h"
+#import "SFCommunicationProtocol.h"
+#import "SFCommunicationHTTP.h"
+#import "SFCommunicationSocketTCP.h"
+#import "SFCommunicationSocketUDP.h"
 
 @interface SFClient ()
 
 // Implementation related properties
 @property (strong, nonatomic) NSMutableArray *metricsBuffer;
+@property (strong, nonatomic) id<SFCommunicationProtocol> connection;
 @property (strong, nonatomic) NSString *app;
 @property (strong, nonatomic) NSNumber *dryrun;
 @property (strong, nonatomic) NSNumber *flushSize;

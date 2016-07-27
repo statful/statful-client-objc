@@ -30,17 +30,7 @@
 
 #import "SFClient.h"
 #import "SFClient+Private.h"
-#import "SFCommunicationProtocol.h"
-#import "SFCommunicationHTTP.h"
-#import "SFCommunicationSocketTCP.h"
-#import "SFCommunicationSocketUDP.h"
 #import "SFConstants.h"
-
-@interface SFClient ()
-
-@property (strong, nonatomic) id<SFCommunicationProtocol> connection;
-
-@end
 
 @implementation SFClient
 
