@@ -125,7 +125,7 @@ If you are feeling that you're still needing help, please visit our oficial full
 
 ## Authors
 
-Tiago Costa(@misticini), tiago.ferreira@mindera.com
+[Tiago Costa](https://github.com/misticini), tiago.ferreira@mindera.com
 
 ## License
 
