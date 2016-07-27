@@ -23,9 +23,10 @@
 
 // TODO: Review this points
 // - Public Documentation
+// - Reject config if provided general tags has two equal keys
+// - Add block to flush buffer method
 // - Add some unit tests with stub dependencies methods
-// - Configure the project for carthage too
-// - Later on add some system stats automatically (Low Priority)
+// - Add some system stats automatically (Low Priority)
 
 #import "SFClient.h"
 #import "SFClient+Private.h"
