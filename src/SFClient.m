@@ -150,8 +150,8 @@
     BOOL stoppedSucessfuly = NO;
     
     if (_isStarted) {
-        [self flushBuffer:YES];
         [self.flushTimer invalidate];
+        [self flushBuffer:YES];
         _isStarted = NO;
         stoppedSucessfuly = YES;
         [_logger logDebug:@"Client was stopped."];
@@ -529,7 +529,7 @@
 }
 
 -(void)flushBuffer:(BOOL)force {
-    if (self.metricsBuffer.count >= self.flushSize.intValue || force) {
+    if (self.metricsBuffer.count >= self.flushSize.intValue || (force && self.metricsBuffer.count > 0)) {
         NSString *metricsToFlush = [self.metricsBuffer componentsJoinedByString:@"\n"];
         [self flushMetrics:metricsToFlush];
         [self.metricsBuffer removeAllObjects];
@@ -542,7 +542,7 @@
 
 -(void)flushMetrics:(NSString*)metrics {
     if (_isStarted) {
-        if (_dryrun) {
+        if ([self.dryrun isEqualTo:@YES]) {
             [_logger logDebug:@"%@",metrics];
         } else {
             NSData *metricsData = [metrics dataUsingEncoding:NSUTF8StringEncoding];

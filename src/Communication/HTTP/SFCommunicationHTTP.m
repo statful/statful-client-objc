@@ -29,6 +29,7 @@
 
 @property (nonatomic, strong) AFHTTPRequestOperationManager *manager;
 @property (nonatomic, strong) NSOperationQueue *operationsQueue;
+@property (nonatomic, strong) NSURL *requestURL;
 
 @end
 
@@ -43,28 +44,30 @@
         _operationsQueue = [[NSOperationQueue alloc] init];
         _operationsQueue.name = NSStringFromClass([self class]);
         
-        NSURL *baseURL = ({
+        _requestURL = ({
             BOOL secure = [dictionary[@"secure"] boolValue];
             NSString *host = dictionary[@"host"];
+            NSString *port = dictionary[@"port"];
+
             NSURL *url;
             
             if (secure) {
-                url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", @"https://", host]];
+                url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@:%@%@", @"https://", host, port, kApiPath]];
             } else {
-                url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", @"http://", host]];
+                url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@:%@%@", @"http://", host, port, kApiPath]];
             }
             
             url;
         });
         
-        AFHTTPRequestOperationManager *manager = [[AFHTTPRequestOperationManager alloc] initWithBaseURL:baseURL];
+        AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
         manager.securityPolicy.allowInvalidCertificates = YES;
         manager.operationQueue = self.operationsQueue;
         
         AFHTTPRequestSerializer *requestSerializer = [AFHTTPRequestSerializer serializer];
         [requestSerializer setValue:kUserAgent forHTTPHeaderField:@"User-Agent"];
         [requestSerializer setValue:dictionary[@"token"] forHTTPHeaderField:@"M-Api-Token"];
-        [requestSerializer setValue:@"application/text" forHTTPHeaderField:@"content-type"];
+        [requestSerializer setValue:@"text/plain; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
         requestSerializer.timeoutInterval = [dictionary[@"timeout"] doubleValue];
         manager.requestSerializer = requestSerializer;
         
@@ -85,7 +88,7 @@
 - (void)sendMetricsData:(id)metricsData completionBlock:(SFCommunicationCompletionBlock)completionBlock {
     NSError *error = nil;
     
-    NSMutableURLRequest *request = [self.manager.requestSerializer requestWithMethod:@"PUT" URLString:kApiPath parameters:nil error:&error];
+    NSMutableURLRequest *request = [self.manager.requestSerializer requestWithMethod:@"PUT" URLString:[_requestURL absoluteString] parameters:nil error:&error];
     
     if (request) {
         
@@ -95,13 +98,13 @@
         [request setHTTPBody:postBody];
     }
     
-    completionBlock(YES, nil);
-    
-    [self.manager HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
+    AFHTTPRequestOperation *httpOperation = [self.manager HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
         completionBlock(YES, error);
     } failure:^(AFHTTPRequestOperation * _Nonnull operation, NSError * _Nonnull error) {
         completionBlock(NO, error);
     }];
+    
+    [httpOperation start];
 }
 
 @end
