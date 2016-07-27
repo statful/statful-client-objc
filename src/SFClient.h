@@ -27,9 +27,9 @@
 @interface SFClient : NSObject
 
 #pragma mark - Properties
-@property (strong, nonatomic) SFLogger *logger;
-@property (assign, nonatomic) BOOL isStarted;
-@property (assign, nonatomic) BOOL isConfigValid;
+@property (strong, nonatomic, readonly) SFLogger *logger;
+@property (assign, nonatomic, readonly) BOOL isStarted;
+@property (assign, nonatomic, readonly) BOOL isConfigValid;
 
 #pragma mark - Convenience Initialisers
 + (instancetype)clientWithConfig:(NSDictionary*)config;

@@ -30,6 +30,9 @@
 @interface SFClient ()
 
 // Implementation related properties
+@property (strong, nonatomic) SFLogger *logger;
+@property (assign, nonatomic) BOOL isStarted;
+@property (assign, nonatomic) BOOL isConfigValid;
 @property (strong, nonatomic) NSMutableArray *metricsBuffer;
 @property (strong, nonatomic) id<SFCommunicationProtocol> connection;
 @property (strong, nonatomic) NSString *app;

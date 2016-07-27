@@ -521,6 +521,7 @@
     if (self.metricsBuffer.count >= self.flushSize.intValue || (force && self.metricsBuffer.count > 0)) {
         NSString *metricsToFlush = [self.metricsBuffer componentsJoinedByString:@"\n"];
         [self flushMetrics:metricsToFlush];
+        // TODO - maybe we should empty the buffer only if the metrics were sent successfully
         [self.metricsBuffer removeAllObjects];
     }
 }
