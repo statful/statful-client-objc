@@ -431,6 +431,22 @@
     
 }
 
+-(void)testInitTransport {
+    [_sf_client start];
+    XCTAssert([_sf_client.connection isKindOfClass:[SFCommunicationSocketUDP class]]);
+    [_sf_client stop];
+    
+    
+    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
+    changedSFConfig[@"transport"] = @(SFClientTransportAPI);
+    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
+    
+    
+    [changedSFClient start];
+    XCTAssert([changedSFClient.connection isKindOfClass:[SFCommunicationHTTP class]]);
+    [changedSFClient stop];
+}
+
 -(void)testCounterMethod {
     NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
     changedSFConfig[@"flush_interval"] = @500;
@@ -775,22 +791,6 @@
     XCTAssertEqual(changedSFClient.metricsBuffer.count, 1);
     XCTAssert([changedSFClient.metricsBuffer[0] isEqualToString:@"application.timer.testTimer,gt1=tag_1,app=statful,unit=ms 0 123 count,10"]);
     
-    [changedSFClient stop];
-}
-
--(void)testInitTransport {
-    [_sf_client start];
-    XCTAssert([_sf_client.connection isKindOfClass:[SFCommunicationSocketUDP class]]);
-    [_sf_client stop];
-    
-    
-    NSMutableDictionary* changedSFConfig = [NSMutableDictionary dictionaryWithDictionary:_sf_config];
-    changedSFConfig[@"transport"] = @(SFClientTransportAPI);
-    SFClient* changedSFClient = [SFClient clientWithConfig:changedSFConfig];
-    
-    
-    [changedSFClient start];
-    XCTAssert([changedSFClient.connection isKindOfClass:[SFCommunicationHTTP class]]);
     [changedSFClient stop];
 }
 
