@@ -38,55 +38,72 @@
 - (BOOL)stop;
 
 #pragma mark - Public Methods
-// TODO: Complete this methods descriptions
 /**
- *  <#Description#>
+ *  Sends a counter metric wihtout options
  *
- *  @param name  <#name description#>
- *  @param value <#value description#>
+ *  @param name    Name of the counter. Ex: transactions
+ *  @param value   Value of the counter. Ex: @1
  */
 -(void)counterWithName:(NSString*)name value:(NSNumber*)value;
 
 /**
- *  <#Description#>
+ *  Sends a counter metric
  *
- *  @param name    <#name description#>
- *  @param value   <#value description#>
- *  @param options <#options description#>
+ *  @param name    Name of the counter. Ex: transactions
+ *  @param value   Value of the counter. Ex: @1
+ *  @param options A NSDictionary with metric options: tags, agg, aggFreq, namespace and timestamp
+ *          - tags: Tags to associate this value with, for example @{@"from": @"serviceA", @"to": @"serviceB",
+ *            @"method": @"login"}
+ *          - agg: NSArray of aggregations to be applied by the client. Ex: @[@"avg", @"p90", @"min"]
+ *          - aggFreq: Aggregation frequency in seconds. One of: @10, @15, @30, @60, @120, @180 or @300
+ *          - namespace: Define the metric namespace. Default: application
+ *          - timestamp: Define the metric timestamp (unit is seconds). Default: current timestamp
  */
 -(void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options;
 
 /**
- *  <#Description#>
+ *  Sends a gauge metric wihtout options
  *
- *  @param name  <#name description#>
- *  @param value <#value description#>
+ *  @param name    Name of the gauge. Ex: current_sessions
+ *  @param value   Value of the gauge. Ex: @1
  */
 -(void)gaugeWithName:(NSString*)name value:(NSNumber*)value;
 
 /**
- *  <#Description#>
+ *  Sends a gauge metric
  *
- *  @param name    <#name description#>
- *  @param value   <#value description#>
- *  @param options <#options description#>
+ *  @param name    Name of the gauge. Ex: current_sessions
+ *  @param value   Value of the gauge. Ex: @1
+ *  @param options A NSDictionary with metric options: tags, agg, aggFreq, namespace and timestamp
+ *          - tags: Tags to associate this value with, for example @{@"from": @"serviceA", @"to": @"serviceB",
+ *            @"method": @"login"}
+ *          - agg: NSArray of aggregations to be applied by the client. Ex: @[@"avg", @"p90", @"min"]
+ *          - aggFreq: Aggregation frequency in seconds. One of: @10, @15, @30, @60, @120, @180 or @300
+ *          - namespace: Define the metric namespace. Default: application
+ *          - timestamp: Define the metric timestamp (unit is seconds). Default: current timestamp
  */
 -(void)gaugeWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options;
 
 /**
- *  <#Description#>
+ *  Sends a timing metric wihtout options
  *
- *  @param name  <#name description#>
- *  @param value <#value description#>
+ *  @param name    Name of the timer. Ex: response_time
+ *  @param value   Value of the timer. Ex: @1
  */
 -(void)timerWithName:(NSString*)name value:(NSNumber*)value;
 
 /**
- *  <#Description#>
+ *  Sends a timing metric
  *
- *  @param name    <#name description#>
- *  @param value   <#value description#>
- *  @param options <#options description#>
+ *  @param name    Name of the timer. Ex: response_time
+ *  @param value   Value of the timer. Ex: @1
+ *  @param options A NSDictionary with metric options: tags, agg, aggFreq, namespace and timestamp
+ *          - tags: Tags to associate this value with, for example @{@"from": @"serviceA", @"to": @"serviceB", 
+ *            @"method": @"login"}
+ *          - agg: NSArray of aggregations to be applied by the client. Ex: @[@"avg", @"p90", @"min"]
+ *          - aggFreq: Aggregation frequency in seconds. One of: @10, @15, @30, @60, @120, @180 or @300
+ *          - namespace: Define the metric namespace. Default: application
+ *          - timestamp: Define the metric timestamp (unit is seconds). Default: current timestamp
  */
 -(void)timerWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options;
 

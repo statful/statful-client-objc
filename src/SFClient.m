@@ -25,7 +25,7 @@
 // - Public Documentation
 // - Add some unit tests with stub dependencies methods
 // - Configure the project for carthage too
-// - Later on add some system stats automatically
+// - Later on add some system stats automatically (Low Priority)
 
 #import "SFClient.h"
 #import "SFClient+Private.h"
