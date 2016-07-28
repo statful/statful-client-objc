@@ -33,7 +33,7 @@
 
 #pragma mark - Convenience Initialisers
 +(instancetype)loggerWithDDLoggerInstance:(DDAbstractLogger <DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel;
-- (instancetype)initWithDDLoggerInstance:(DDAbstractLogger <DDLogger>*)logger loggerLevel:(SFLoggerLogLevel)loggerLevel NS_DESIGNATED_INITIALIZER;
+-(instancetype)initWithDDLoggerInstance:(DDAbstractLogger <DDLogger>*)logger loggerLevel:(SFLoggerLogLevel)loggerLevel NS_DESIGNATED_INITIALIZER;
 
 #pragma mark - Public Methods
 -(void)logError:(id)format, ...;

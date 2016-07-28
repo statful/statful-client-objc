@@ -14,7 +14,7 @@ Please check out our [website](http://statful.com) or our extended [documentatio
 * [Quick Start](#quick-start)
 * [Examples](#examples)
 * [Reference](#reference)
-* [Still Need Help?](#still-need-help?)
+* [Still Need Help?](#still-need-help)
 * [Authors](#authors)
 * [License](#license)
 
@@ -274,15 +274,41 @@ The Client used to send metrics for the system.
 
 #### Methods
 
-##### + (instancetype)clientWithConfig:(NSDictionary*)config
-##### - (BOOL)start
-##### - (BOOL)stop
-##### - (void)counterWithName:(NSString*)name value:(NSNumber*)value
-##### - (void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
-##### - (void)gaugeWithName:(NSString*)name value:(NSNumber*)value 
-##### - (void)gaugeWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
-##### - (void)timerWithName:(NSString*)name value:(NSNumber*)value
-##### - (void)timerWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
+```objc
++ (instancetype)clientWithConfig:(NSDictionary*)config
+```
+
+```objc
+- (BOOL)start
+```
+
+```objc
+- (BOOL)stop
+```
+
+```objc
+- (void)counterWithName:(NSString*)name value:(NSNumber*)value
+```
+
+```objc
+- (void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
+```
+
+```objc
+- (void)gaugeWithName:(NSString*)name value:(NSNumber*)value 
+```
+
+```objc
+- (void)gaugeWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
+```
+
+```objc
+- (void)timerWithName:(NSString*)name value:(NSNumber*)value
+```
+
+```objc
+- (void)timerWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
+```
 
 #### Properties
 
@@ -311,10 +337,29 @@ The Logger used by Statful Client Objective-c is a simple encapsulation for the 
 
 #### Methods
 
-##### + (instancetype)loggerWithDDLoggerInstance:(DDAbstractLogger <DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel
-##### - (void)logDebug:(id)format, ...
-##### - (void)logError:(id)format, ...
-##### - (void)logVerbose:(id)format, ...
+```objc
++ (instancetype)loggerWithDDLoggerInstance:(DDAbstractLogger <DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel
+```
+
+This is a class method that receives a `DDAbstractLogger <DDLogger> *` and a `SFLoggerLogLevel` and returns a new `SFLogger`.
+
+```objc
+- (void)logDebug:(id)format, ...
+```
+
+This method receives a string format followed by the format params (seperated by commas) and sends a new **debug** message to be logged.
+
+```objc
+- (void)logError:(id)format, ...
+```
+
+This method receives a string format followed by the format params (seperated by commas) and sends a new **error** message to be logged.
+
+```objc
+- (void)logVerbose:(id)format, ...
+```
+
+This method receives a string format followed by the format params (seperated by commas) and sends a new **verbose** message to be logged.
 
 #### Properties
 
