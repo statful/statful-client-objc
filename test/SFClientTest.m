@@ -52,7 +52,7 @@
                    @"flush_size" : @10,
                    @"flush_interval" : @10,
                    @"host" : @"123.456.789.123",
-                   @"logger": [DDASLLogger sharedInstance],
+                   @"logger": [DDTTYLogger sharedInstance],
                    @"port" : @"123",
                    @"sample_rate" : @100,
                    @"secure" : @NO,
