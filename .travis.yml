@@ -2,5 +2,9 @@ language: objective-c
 xcode_workspace: statful-client-objc.xcworkspace
 xcode_scheme: statful-client-objc
 
+before_install:
+    - rvm use system
+    - sudo gem install cocoapods -v '0.39.0'
+
 notifications:
   email: false
