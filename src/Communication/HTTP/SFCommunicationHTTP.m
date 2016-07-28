@@ -69,7 +69,7 @@
         [requestSerializer setValue:dictionary[@"token"] forHTTPHeaderField:@"M-Api-Token"];
         [requestSerializer setValue:@"text/plain; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
         [requestSerializer setValue:@"text/plain; charset=utf-8" forHTTPHeaderField:@"Accept"];
-        requestSerializer.timeoutInterval = [dictionary[@"timeout"] doubleValue];
+        requestSerializer.timeoutInterval = ([dictionary[@"timeout"] doubleValue] /1000.0f);
         manager.requestSerializer = requestSerializer;
         
         AFHTTPResponseSerializer *responseSerializer = [AFHTTPResponseSerializer serializer];

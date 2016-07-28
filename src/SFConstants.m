@@ -57,7 +57,7 @@ void __attribute__((constructor)) initializeConstants() {
     kImplementedMethods = @[@"counter", @"gauge", @"timer"];
     kDefaultDefaults = @{};
     kDefaultFlushSize = @10;
-    kDefaultFlushInterval = @10;
+    kDefaultFlushInterval = @10000;
     kDefaultSampleRate = @100;
     kDefaultDryrun = @NO;
     kDefaultTimeout = @2000;

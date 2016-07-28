@@ -56,7 +56,7 @@
 
 - (void)sendMetricsData:(id)metricsData completionBlock:(SFCommunicationCompletionBlock)completionBlock {
     
-    [self.socket sendData:metricsData withTimeout:self.timeout tag:0];
+    [self.socket sendData:metricsData withTimeout:(self.timeout/1000.0f) tag:0];
     completionBlock(YES, nil);
 }
 
