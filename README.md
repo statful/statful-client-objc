@@ -7,6 +7,17 @@ This client is intended to gather metrics and send them to the Statful service.
 
 Please check out our [website](http://statful.com) or our extended [documentation](http://statful.com/docs) for a comprehensive look at all features available on Statful.
 
+## Table of Contents
+
+* [Supported Platforms](#supported-platforms)
+* [Installation](#installation)
+* [Quick Start](#quick-start)
+* [Examples](#examples)
+* [Reference](#reference)
+* [Still Need Help?](#still-need-help?)
+* [Authors](#authors)
+* [License](#license)
+
 ## Supported Platforms
 
 | StatfulClient Version | Minimum iOS Target  | Minimum macOS Target  | Minimum watchOS Target  | Minimum tvOS Target  | Notes |
@@ -65,78 +76,7 @@ SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
 // Every metric in the buffer is sent when client stop is called
 [statfulClient stop];
 ```
-> **IMPORTANT:** This configuration uses the default **host** and **port**. You can learn more about configuration in [API Reference](#api-reference).
-
-## Reference 
-
-Our Statful Client API it's very simple. However you can check all the details about that here.
-
-### Client
-
-The Client used to send metrics for the system.
-
-#### Class 
-`SFClient`
-
-#### Enumerated Types
-
-##### SFClientTransport
-
-| Type | Description |
-|:---|:---|
-| `SFClientTransportAPI` | An enumerated type that defines API transport. It makes the client send the metrics through a HTTP API. |
-| `SFClientTransportUDP` | An enumerated type that defines UDP transport. It makes the client send the metrics through an UDP socket. |
-
-#### Methods
-
-##### + (instancetype)clientWithConfig:(NSDictionary*)config
-##### - (BOOL)start
-##### - (BOOL)stop
-##### - (void)counterWithName:(NSString*)name value:(NSNumber*)value
-##### - (void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
-##### - (void)gaugeWithName:(NSString*)name value:(NSNumber*)value 
-##### - (void)gaugeWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
-##### - (void)timerWithName:(NSString*)name value:(NSNumber*)value
-##### - (void)timerWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
-
-#### Properties
-
-| Property | Type | Description | Access  |
-|:---:|:---:|:---:|:---:|
-| _logger_ | `SFLogger*` | The logger object used by client. | readonly |
-| _isConfigValid_ | `BOOL` | A boolean value indicating whether the setted config is valid. | readonly |
-| _isStarted_ | `BOOL` | A boolean value indicating whether the client is started. | readonly |
-
-### Logger
-
-The Logger used by Statful Client Objective-c is a simple encapsulation for the [CocoaLumberjack](https://github.com/CocoaLumberjack/CocoaLumberjack) logger. 
-
-#### Class 
-`SFLogger`
-
-#### Enumerated Types
-
-##### SFLoggerLogLevel
-
-| Type | Description |
-|:---|:---|
-| `SFLoggerLogLevelError` | An enumerated type that defines the Error logger's level. This is the most restrict logger level that forces logger to only output error messages. |
-| `SFLoggerLogLevelDebug` | An enumerated type that defines the Debug logger's level. This is the intermediate logger level that forces logger to output debug messages but also error messages. |
-| `SFLoggerLogLevelVerbose` | An enumerated type that defines the Verbose logger's level. This is the least restrict logger level that forces logger to output all kind of messages. |
-
-#### Methods
-
-##### + (instancetype)loggerWithDDLoggerInstance:(DDAbstractLogger <DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel
-##### - (void)logDebug:(id)format, ...
-##### - (void)logError:(id)format, ...
-##### - (void)logVerbose:(id)format, ...
-
-#### Properties
-
-| Property | Type | Description | Access  |
-|:---|:---|:---|:---|
-| _logger_ | `DDAbstractLogger <DDLogger> *` | The internal logger instance according DDLogger protocol from CocoaLumberjack used by SFLogger to output messages. It can be one already defined by CocoaLumberjack like `DTTYLogger`, `DDASLLogger`, `DDFileLogger` or any other custom logger object that complies with `DDAbstractLogger <DDLogger>` from [CocoaLumberjack](https://github.com/CocoaLumberjack/CocoaLumberjack). | readwrite |
-| _loggerLevel_ | `SFLoggerLogLevel ` | The logger level used to select which messages should be outputed. It can be  | readwrite |
+> **IMPORTANT:** This configuration uses the default **host** and **port**. You can learn more about configuration in [Reference](#api-reference).
 
 ## Examples
 You can find here some useful usage examples of the Statful Client. In the following examples is assumed you have already installed and included Statful Client in your project.
@@ -311,6 +251,78 @@ SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
 [statfulClient gaugeWithName:@"testTimer" value:@0];
 
 ```
+
+## Reference 
+
+Our Statful Client API it's very simple. However you can check all the details about that here.
+
+### Client
+
+The Client used to send metrics for the system.
+
+#### Class 
+`SFClient`
+
+#### Enumerated Types
+
+##### SFClientTransport
+
+| Type | Description |
+|:---|:---|
+| `SFClientTransportAPI` | An enumerated type that defines API transport. It makes the client send the metrics through a HTTP API. |
+| `SFClientTransportUDP` | An enumerated type that defines UDP transport. It makes the client send the metrics through an UDP socket. |
+
+#### Methods
+
+##### + (instancetype)clientWithConfig:(NSDictionary*)config
+##### - (BOOL)start
+##### - (BOOL)stop
+##### - (void)counterWithName:(NSString*)name value:(NSNumber*)value
+##### - (void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
+##### - (void)gaugeWithName:(NSString*)name value:(NSNumber*)value 
+##### - (void)gaugeWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
+##### - (void)timerWithName:(NSString*)name value:(NSNumber*)value
+##### - (void)timerWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
+
+#### Properties
+
+| Property | Type | Description | Access  |
+|:---:|:---:|:---:|:---:|
+| _logger_ | `SFLogger*` | The logger object used by client. | readonly |
+| _isConfigValid_ | `BOOL` | A boolean value indicating whether the setted config is valid. | readonly |
+| _isStarted_ | `BOOL` | A boolean value indicating whether the client is started. | readonly |
+
+### Logger
+
+The Logger used by Statful Client Objective-c is a simple encapsulation for the [CocoaLumberjack](https://github.com/CocoaLumberjack/CocoaLumberjack) logger. 
+
+#### Class 
+`SFLogger`
+
+#### Enumerated Types
+
+##### SFLoggerLogLevel
+
+| Type | Description |
+|:---|:---|
+| `SFLoggerLogLevelError` | An enumerated type that defines the Error logger's level. This is the most restrict logger level that forces logger to only output error messages. |
+| `SFLoggerLogLevelDebug` | An enumerated type that defines the Debug logger's level. This is the intermediate logger level that forces logger to output debug messages but also error messages. |
+| `SFLoggerLogLevelVerbose` | An enumerated type that defines the Verbose logger's level. This is the least restrict logger level that forces logger to output all kind of messages. |
+
+#### Methods
+
+##### + (instancetype)loggerWithDDLoggerInstance:(DDAbstractLogger <DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel
+##### - (void)logDebug:(id)format, ...
+##### - (void)logError:(id)format, ...
+##### - (void)logVerbose:(id)format, ...
+
+#### Properties
+
+| Property | Type | Description | Access  |
+|:---|:---|:---|:---|
+| _logger_ | `DDAbstractLogger <DDLogger> *` | The internal logger instance according DDLogger protocol from CocoaLumberjack used by SFLogger to output messages. It can be one already defined by CocoaLumberjack like `DTTYLogger`, `DDASLLogger`, `DDFileLogger` or any other custom logger object that complies with `DDAbstractLogger <DDLogger>` from [CocoaLumberjack](https://github.com/CocoaLumberjack/CocoaLumberjack). | readwrite |
+| _loggerLevel_ | `SFLoggerLogLevel ` | The logger level used to select which messages should be outputed. It can be  | readwrite |
+
 
 ## Still Need Help?
 If you are feeling that you're still needing help, please visit our oficial full [Statful Documentation](http://statful.com/docs) page.
