@@ -9,11 +9,11 @@ Please check out our [website](http://statful.com) or our extended [documentatio
 
 ## Supported Platforms
 
-| StatfulClient Version | Minimum iOS Target  | Minimum macOS Target  | Minimum watchOS Target  | Minimum tvOS Target  |                                   Notes                                   |
-|:--------------------:|:---------------------------:|:----------------------------:|:----------------------------:|:----------------------------:|:-------------------------------------------------------------------------:|
+| StatfulClient Version | Minimum iOS Target  | Minimum macOS Target  | Minimum watchOS Target  | Minimum tvOS Target  | Notes |
+|:---------------------:|:-------------------:|:---------------------:|:-----------------------:|:--------------------:|:-----:|
 | 1.0.x | 6.0 | 10.8 | n/a | n/a | Xcode 7+ is required |
 
-> **IMPORTANT**: Your project must support [64-bit with modern Cocoa runtime](https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtVersionsPlatforms.html)).
+> **IMPORTANT:** Your project must support [64-bit with modern Cocoa runtime](https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtVersionsPlatforms.html)).
 
 ## Installation
 Currently Statful Client Objective-C can only be installed with CocoaPods.
@@ -65,31 +65,78 @@ SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
 // Every metric in the buffer is sent when client stop is called
 [statfulClient stop];
 ```
-> **IMPORTANT** This configuration uses the default **host** and **port**. You can learn more about configuration in [API Reference](#api-reference).
+> **IMPORTANT:** This configuration uses the default **host** and **port**. You can learn more about configuration in [API Reference](#api-reference).
 
-## API Reference 
+## Reference 
+
+Our Statful Client API it's very simple. However you can check all the details about that here.
 
 ### Client
 
-* __host__ [optional] [default: '127.0.0.1']
-* __port__ [optional] [default: 2013]
-* __secure__ [optional] [default: true] - enable or disable https
-* __timeout__ [optional] [default: 1000ms] - socket timeout for http/tcp transports
-* __token__ [optional] - An authentication token to send to Statful
-* __app__ [optional] - if specified set a tag â€˜app=fooâ€™
-* __dryrun__ [optional] [default: false] - do not actually send metrics when flushing the buffer
-* __tags__ [optional] - global list of tags to set
-* __sampleRate__ [optional] [default: 100] [between: 1-100] - global rate sampling
-* __namespace__ [optional] [default: â€˜applicationâ€™] - default namespace (can be overridden in function calls)
-* __flushSize__ [optional] [default: 10] - defines the periodicity of buffer flushes
-* __flushInterval__ [optional] [default: 0] - Defines an interval to flush the metrics
+The Client used to send metrics for the system.
+
+#### Class 
+`SFClient`
+
+#### Enumerated Types
+
+**SFClientTransport**
+
+| Type | Description |
+|:---|:---|
+| `SFClientTransportAPI` | An enumerated type that defines API transport. It makes the client send the metrics through a HTTP API. |
+| `SFClientTransportUDP` | An enumerated type that defines UDP transport. It makes the client send the metrics through an UDP socket. |
 
 #### Methods
+
+##### + (instancetype)clientWithConfig:(NSDictionary*)config
+##### - (BOOL)start
+##### - (BOOL)stop
+##### - (void)counterWithName:(NSString*)name value:(NSNumber*)value
+##### - (void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
+##### - (void)gaugeWithName:(NSString*)name value:(NSNumber*)value 
+##### - (void)gaugeWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
+##### - (void)timerWithName:(NSString*)name value:(NSNumber*)value
+##### - (void)timerWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
+
 #### Properties
+
+| Property | Type | Description | Access  |
+|:---:|:---:|:---:|:---:|
+| _logger_ | `SFLogger*` | The logger object used by client. | readonly |
+| _isConfigValid_ | `BOOL` | A boolean value indicating whether the setted config is valid. | readonly |
+| _isStarted_ | `BOOL` | A boolean value indicating whether the client is started. | readonly |
 
 ### Logger
+
+The Logger used by Statful Client Objective-c is a simple encapsulation for the [CocoaLumberjack](https://github.com/CocoaLumberjack/CocoaLumberjack) logger. 
+
+#### Class 
+`SFLogger`
+
+#### Enumerated Types
+
+**SFLoggerLogLevel**
+
+| Type | Description |
+|:---|:---|
+| `SFLoggerLogLevelError` | An enumerated type that defines the Error logger's level. This is the most restrict logger level that forces logger to only output error messages. |
+| `SFLoggerLogLevelDebug` | An enumerated type that defines the Debug logger's level. This is the intermediate logger level that forces logger to output debug messages but also error messages. |
+| `SFLoggerLogLevelVerbose` | An enumerated type that defines the Verbose logger's level. This is the least restrict logger level that forces logger to output all kind of messages. |
+
 #### Methods
+
+##### + (instancetype)loggerWithDDLoggerInstance:(DDAbstractLogger <DDLogger> *)logger loggerLevel:(SFLoggerLogLevel)loggerLevel
+##### - (void)logDebug:(id)format, ...
+##### - (void)logError:(id)format, ...
+##### - (void)logVerbose:(id)format, ...
+
 #### Properties
+
+| Property | Type | Description | Access  |
+|:---|:---|:---|:---|
+| _logger_ | `DDAbstractLogger <DDLogger> *` | The internal logger instance according DDLogger protocol from CocoaLumberjack used by SFLogger to output messages. It can be one already defined by CocoaLumberjack like `DTTYLogger`, `DDASLLogger`, `DDFileLogger` or any other custom logger object that complies with `DDAbstractLogger <DDLogger>` from [CocoaLumberjack](https://github.com/CocoaLumberjack/CocoaLumberjack). | readwrite |
+| _loggerLevel_ | `SFLoggerLogLevel ` | The logger level used to select which messages should be outputed. It can be  | readwrite |
 
 ## Examples
 You can find here some useful usage examples of the Statful Client. In the following examples is assumed you have already installed and included Statful Client in your project.
