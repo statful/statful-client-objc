@@ -9,7 +9,7 @@ Please check out our [website](http://statful.com) or our extended [documentatio
 
 | StatfulClient Version | Minimum iOS Target  | Minimum macOS Target  | Minimum watchOS Target  | Minimum tvOS Target  |                                   Notes                                   |
 |:--------------------:|:---------------------------:|:----------------------------:|:----------------------------:|:----------------------------:|:-------------------------------------------------------------------------:|
-| 1.0.x | iOS 6 | OS X 10.8 | n/a | n/a | Xcode 7+ is required |
+| 1.0.x | 6.0 | 10.8 | n/a | n/a | Xcode 7+ is required |
 
 > **IMPORTANT**: Your project must support [64-bit with modern Cocoa runtime](https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtVersionsPlatforms.html)).
 
@@ -94,33 +94,176 @@ You can find here some useful usage examples of the Statful Client. In the follo
 
 ### UDP Configuration
 
+Creates a simple UDP configuration for the client.
+
 ```objc
-NSDictionary *clientConfig = @{ @"transport":@(SFClientTransportUDP), 
+NSDictionary *clientConfig = @{ @"app": @"AccountService",
                                 @"host": @"statful-relay.yourcompany.com",
-                                @"app": @"AccountService",
-                                @"tags": @{@"cluster": @"production"}
+                                @"tags": @{
+                                    @"cluster": @"production"
+                                },
+                                @"transport":@(SFClientTransportUDP)
                              };
 SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
 ```
 
 ### HTTP Configuration
 
+Creates a simple HTTP API configuration for the client.
+
 ```objc
-NSDictionary *clientConfig = @{ @"transport":@(SFClientTransportAPI), 
+NSDictionary *clientConfig = @{ @"app": @"AccountService",
                                 @"host": @"statful-relay.yourcompany.com",
+                                @"tags": @{
+                                    @"cluster": @"production"
+                                },
                                 @"token": @"YOUR_TOKEN_FOR_STATFUL_API",
-                                @"app": @"AccountService",
-                                @"tags": @{@"cluster": @"production"}
+                                @"transport":@(SFClientTransportAPI)
                              };
 SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
 ```
 
 ### Logger Configuration
-### Defaults Configuration Per Method
-### Mixed Complete Configuration
-### Add metrics
 
-## Still need help?
+Creates a simple client configuration and change some logger's definitions.
+
+```objc
+NSDictionary *clientConfig = @{ @"host": @"statful-relay.yourcompany.com",
+                                @"logger": [DDTTYLogger sharedInstance],
+                                @"token": @"YOUR_TOKEN_FOR_STATFUL_API",
+                                @"transport":@(SFClientTransportAPI)
+                             };
+                             
+SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
+                             
+// Logger was instantiated with DDTTYLogger, a default implementation of Xcode Console Logger already provided by CocoaLumberjack. 
+// Also is always instantiated with lower available logger level: SFLoggerLogLevelError.
+// However you're able to change logger
+statfulClient.logger.loggerLevel = SFLoggerLogLevelDebug;
+                             
+// You can also change the logger used by the client.
+// For doing that you have to provide a logger that inherits from DDAbstractLogger <DDLogger>
+// For example: 
+statfulClient.logger.logger = [DDTTYLogger sharedInstance];
+
+// Or 
+DDFileLogger *fileLogger = [[DDFileLogger alloc] init];
+fileLogger.rollingFrequency = 60 * 60 * 24;
+fileLogger.logFileManager.maximumNumberOfLogFiles = 7;
+statfulClient.logger.logger = fileLogger
+
+```
+
+### Defaults Configuration Per Method
+
+Creates a configuration for the client with custom default options per method.
+
+```objc
+NSDictionary *clientConfig = @{ @"app": @"AccountService",
+                                @"defaults": @{
+                                    @"counter": @{
+                                        @"agg": @[@"avg"],
+                                        @"agg_freq": @180
+                                    },
+                                    @"gauge": @{
+                                        @"agg": @[@"first"],
+                                        @"agg_freq": @180
+                                    },
+                                    @"timer": @{
+                                        @tags: @{
+                                            @"cluster": @"qa"
+                                        },
+                                        @"agg": @[@"count"],
+                                        @"agg_freq": @180
+                                    }
+                                },
+                                @"host": @"statful-relay.yourcompany.com",
+                                @"tags": @{
+                                    @"cluster": @"production"
+                                },
+                                @"token": @"YOUR_TOKEN_FOR_STATFUL_API",
+                                @"transport":@(SFClientTransportAPI)
+                             };
+SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
+```
+
+### Mixed Complete Configuration
+
+Creates a configuration defining a value for every available option.
+
+```objc
+NSDictionary *clientConfig = @{ @"app": @"AccountService",
+                                @"defaults": @{
+                                    @"timer": @{
+                                        @tags: @{
+                                            @"cluster": @"qa"
+                                        },
+                                        @"agg": @[@"count"],
+                                        @"agg_freq": @180
+                                    }
+                                },
+                                @"dryrun": @YES,
+                                @"flush_interval": @5000,
+                                @"flush_size": @50,
+                                @"host": @"statful-relay.yourcompany.com",
+                                @"logger": [DDTTYLogger sharedInstance],
+                                @"namespace": @"application",
+                                @"port": @"123",
+                                @"sample_rate": @95,
+                                @"secure": @NO,
+                                @"tags": @{
+                                    @"cluster": @"production"
+                                },
+                                @"timeout": @300,
+                                @"token": @"YOUR_TOKEN_FOR_STATFUL_API",
+                                @"transport": @(SFClientTransportAPI)
+                             };
+SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
+```
+
+### Add Metrics
+
+Creates a simple client configuration and use it to send some metrics.
+
+```objc
+NSDictionary *clientConfig = @{ @"host": @"statful-relay.yourcompany.com",
+                                @"token": @"YOUR_TOKEN_FOR_STATFUL_API",
+                                @"transport":@(SFClientTransportAPI)
+                             };
+SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
+
+// Ignored metric
+[statfulClient gaugeWithName:@"testTimer" value:@0];
+
+[statfulClient start];
+
+// Send three different metrics (gauge, timer and a counter)
+// Attention: calling method gaugeWithName:value is equal to 
+// calling gaugeWithName:value:options with null options
+[statfulClient gaugeWithName:@"testTimer" value:@0];
+[statfulClient timerWithName:@"testTimer" value:@0 options:nil];
+[statfulClient timerWithName:@"testTimer" value:@0 options:@{@"agg": @[@"first"],
+                                                             @"agg_freq": @60
+                                                            }];
+                                                            
+// Metric to be sent with more custom options like timestamp instead of current timestamp
+[statfulClient timerWithName:@"testTimer" value:@0 options:@{@"tags": @{
+                                                                @"cluster": @"sandbox"
+                                                             },
+                                                             @"agg": @[@"last"],
+                                                             @"agg_freq": @60
+                                                             @"namespace": @"sandbox"
+                                                             @"timestamp": @"1469714440"
+                                                            }];
+                                                            
+[statfulClient stop];
+
+// Ignored metric
+[statfulClient gaugeWithName:@"testTimer" value:@0];
+
+```
+
+## Still Need Help?
 If you are feeling that you're still needing help, please visit our oficial full [Statful Documentation](http://statful.com/docs) page.
 
 ## Authors
