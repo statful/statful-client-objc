@@ -8,5 +8,7 @@ before_install:
     - rvm use 2.2.5
     - sudo gem install cocoapods -v '0.39.0'
 
+cache: cocoapods
+
 notifications:
   email: false
