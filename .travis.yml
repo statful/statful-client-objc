@@ -1,3 +1,6 @@
 language: objective-c
 xcode_workspace: statful-client-objc.xcworkspace
 xcode_scheme: statful-client-objc
+
+notifications:
+  email: false
