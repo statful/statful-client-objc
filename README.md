@@ -1,6 +1,6 @@
 # Statful Client Objective-C
 
-[![Build Status](https://travis-ci.org/statful/statful-client-nodejs.svg?branch=master)](https://https://travis-ci.org/statful/statful-client-nodejs)
+[![Build Status](https://travis-ci.org/statful/statful-client-objc.svg?branch=master)](https://https://travis-ci.org/statful/statful-client-objc)
 
 Statful client for OS-X and iOS written in Objective-C.
 This client is intended to gather metrics and send them to the Statful service.
