@@ -80,7 +80,7 @@ The Client used to send metrics for the system.
 
 #### Enumerated Types
 
-**SFClientTransport**
+##### SFClientTransport
 
 | Type | Description |
 |:---|:---|
@@ -116,7 +116,7 @@ The Logger used by Statful Client Objective-c is a simple encapsulation for the 
 
 #### Enumerated Types
 
-**SFLoggerLogLevel**
+##### SFLoggerLogLevel
 
 | Type | Description |
 |:---|:---|
