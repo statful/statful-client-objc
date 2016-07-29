@@ -24,7 +24,8 @@
 // TODO: Review this points
 // - Reject config if provided general tags has two equal keys
 // - Add block to flush buffer method
-// - Add some unit tests with stub dependencies methods
+// - Integrate mocks framework for unit tests
+// - Support config load by plist
 // - Add some system stats automatically (Low Priority)
 
 #import "SFClient.h"
@@ -65,29 +66,31 @@
     return [self initWithConfig:nil];
 }
 
+#pragma mark - Private methods
+
 - (void)initTransportLayer {
-    NSDictionary *configs = @{@"host" : _host, @"port" : _port, @"timeout" : _timeout};
+    NSDictionary *configs = @{@"host" : self.host, @"port" : self.port, @"timeout" : self.timeout};
     __block BOOL successInit = YES;
     __block NSError* errorInit = nil;
     
-    if (_transport == SFClientTransportTCP) {
-        _connection = [[SFCommunicationSocketTCP alloc] initWithDictionary:configs completionBlock:^(BOOL success, NSError *error) {
+    if (self.transport == SFClientTransportTCP) {
+        self.connection = [[SFCommunicationSocketTCP alloc] initWithDictionary:configs completionBlock:^(BOOL success, NSError *error) {
             
             successInit = success;
             errorInit = error;
         }];
-    } else if (_transport == SFClientTransportUDP) {
-        _connection = [[SFCommunicationSocketUDP alloc] initWithDictionary:configs completionBlock:^(BOOL success, NSError *error) {
+    } else if (self.transport == SFClientTransportUDP) {
+        self.connection = [[SFCommunicationSocketUDP alloc] initWithDictionary:configs completionBlock:^(BOOL success, NSError *error) {
             
             successInit = success;
             errorInit = error;
         }];
-    } else if (_transport == SFClientTransportAPI) {
+    } else if (self.transport == SFClientTransportAPI) {
         NSMutableDictionary *mutableConfigs = [configs mutableCopy];
-        mutableConfigs[@"secure"] = _secure;
-        mutableConfigs[@"token"] = _token;
+        mutableConfigs[@"secure"] = self.secure;
+        mutableConfigs[@"token"] = self.token;
 
-        _connection = [[SFCommunicationHTTP alloc] initWithDictionary:[mutableConfigs copy] completionBlock:^(BOOL success, NSError *error) {
+        self.connection = [[SFCommunicationHTTP alloc] initWithDictionary:[mutableConfigs copy] completionBlock:^(BOOL success, NSError *error) {
             
             successInit = success;
             errorInit = error;
@@ -95,7 +98,7 @@
     }
     
     if (successInit) {
-        [_logger logDebug:@"Success initing transport layer."];
+        [self.logger logDebug:@"Success initing transport layer."];
     } else {
         @throw [NSException exceptionWithName:@"SFClientTransportInitError" reason:[NSString stringWithFormat:@"Error initing transport layer: %@.", errorInit] userInfo:nil];
     }
@@ -103,78 +106,7 @@
 
 -(void)initFlushTimer {
     self.flushTimer = [NSTimer scheduledTimerWithTimeInterval:([self.flushInterval floatValue]/1000.0f) target:self selector:@selector(flushBufferWithTimer) userInfo:nil repeats:YES];
-    [[NSRunLoop currentRunLoop] addTimer:_flushTimer forMode:NSDefaultRunLoopMode];
-}
-
--(BOOL)start {
-    BOOL startedSucessfuly = NO;
-    
-    if (!_isStarted) {
-        if (_isConfigValid) {
-            @try {
-                // Clear buffer to start
-                [self.metricsBuffer removeAllObjects];
-                
-                // Init the transport layer and the flush rate timer
-                [self initTransportLayer];
-                [self initFlushTimer];
-            
-                _isStarted = YES;
-                startedSucessfuly = YES;
-                [_logger logDebug:@"Client was started."];
-            } @catch(NSException* e) {
-                [_logger logError:e.reason];
-            }
-        } else {
-            [_logger logDebug:@"Client config is not valid."];
-        }
-    } else {
-        [_logger logDebug:@"Client is already running."];
-    }
-    
-    return startedSucessfuly;
-}
-
--(BOOL)stop {
-    BOOL stoppedSucessfuly = NO;
-    
-    if (_isStarted) {
-        [self.flushTimer invalidate];
-        [self flushBuffer:YES];
-        _isStarted = NO;
-        stoppedSucessfuly = YES;
-        [_logger logDebug:@"Client was stopped."];
-    } else {
-        [_logger logDebug:@"Client is not started."];
-    }
-    
-    return stoppedSucessfuly;
-}
-
-#pragma mark - Public Methods
-
--(void)counterWithName:(NSString*)name value:(NSNumber*)value {
-    [self counterWithName:name value:value options:nil];
-}
-
--(void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
-    [self methodWithType:@"counter" name:name value:value options:options];
-}
-
--(void)gaugeWithName:(NSString*)name value:(NSNumber*)value {
-    [self gaugeWithName:name value:value options:nil];
-}
-
--(void)gaugeWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
-    [self methodWithType:@"gauge" name:name value:value options:options];
-}
-
--(void)timerWithName:(NSString*)name value:(NSNumber*)value {
-    [self timerWithName:name value:value options:nil];
-}
-
--(void)timerWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
-    [self methodWithType:@"timer" name:name value:value options:options];
+    [[NSRunLoop currentRunLoop] addTimer:self.flushTimer forMode:NSDefaultRunLoopMode];
 }
 
 -(void)methodWithType:(NSString*)type name:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
@@ -183,10 +115,10 @@
             NSDictionary *processedOptions = [self calculateConfigForType:type withOptions:options];
             [self putWithType:type name:name value:value options:processedOptions];
         } else {
-            [_logger logError:@"Metric not sent. Method type is not supported."];
+            [self.logger logError:@"Metric not sent. Method type is not supported."];
         }
     } else {
-        [_logger logError:@"Metric not sent. Please review the following: aggregations, aggregation frequency and tags."];
+        [self.logger logError:@"Metric not sent. Please review the following: aggregations, aggregation frequency and tags."];
     }
 }
 
@@ -266,7 +198,334 @@
     }
 }
 
-#pragma mark - Properties setters
+-(void)validateAndSetConfig:(NSDictionary *)config {
+    __block SFClient *blocksafeSelf = self;
+    NSDictionary* propertiesRules = getPropertiesRules();
+    
+    // Logger
+    [self setProperty:@"logger" fromConfig:config WithRules:propertiesRules[@"logger"] AndWithSetter:^(id value) {
+        [blocksafeSelf setLogger:value];
+    }];
+    
+    // Host
+    [self setProperty:@"host" fromConfig:config WithRules:propertiesRules[@"host"] AndWithSetter:^(id value) {
+        [blocksafeSelf setHost:value];
+    }];
+    
+    // Port
+    [self setProperty:@"port" fromConfig:config WithRules:propertiesRules[@"port"] AndWithSetter:^(id value) {
+        [blocksafeSelf setPort:value];
+    }];
+    
+    // Transport
+    [self setProperty:@"transport" fromConfig:config WithRules:propertiesRules[@"transport"] AndWithSetter:^(id value) {
+        [blocksafeSelf setTransport:[((NSNumber*)value) intValue]];
+    }];
+    
+    // Secure
+    [self setProperty:@"secure" fromConfig:config WithRules:propertiesRules[@"secure"] AndWithSetter:^(id value) {
+        [blocksafeSelf setSecure:value];
+    }];
+    
+    // Timeout
+    [self setProperty:@"timeout" fromConfig:config WithRules:propertiesRules[@"timeout"] AndWithSetter:^(id value) {
+        [blocksafeSelf setTimeout:value];
+    }];
+    
+    // Token
+    [self setProperty:@"token" fromConfig:config WithRules:propertiesRules[@"token"] AndWithSetter:^(id value) {
+        [blocksafeSelf setToken:value];
+    }];
+    
+    // App
+    [self setProperty:@"app" fromConfig:config WithRules:propertiesRules[@"app"] AndWithSetter:^(id value) {
+        [blocksafeSelf setApp:value];
+    }];
+    
+    // Dryrun
+    [self setProperty:@"dryrun" fromConfig:config WithRules:propertiesRules[@"dryrun"] AndWithSetter:^(id value) {
+        [blocksafeSelf setDryrun:value];
+    }];
+    
+    // Tags
+    [self setProperty:@"tags" fromConfig:config WithRules:propertiesRules[@"tags"] AndWithSetter:^(id value) {
+        [blocksafeSelf setTags:value];
+    }];
+    
+    // Sample Rate
+    [self setProperty:@"sample_rate" fromConfig:config WithRules:propertiesRules[@"sample_rate"] AndWithSetter:^(id value) {
+        [blocksafeSelf setSampleRate:value];
+    }];
+    
+    // Flush Size
+    [self setProperty:@"flush_size" fromConfig:config WithRules:propertiesRules[@"flush_size"] AndWithSetter:^(id value) {
+        [blocksafeSelf setFlushSize:value];
+    }];
+    
+    // Flush Interval
+    [self setProperty:@"flush_interval" fromConfig:config WithRules:propertiesRules[@"flush_interval"] AndWithSetter:^(id value) {
+        [blocksafeSelf setFlushInterval:value];
+    }];
+    
+    // Namespace
+    [self setProperty:@"namespace" fromConfig:config WithRules:propertiesRules[@"namespace"] AndWithSetter:^(id value) {
+        [blocksafeSelf setNamespace:value];
+    }];
+    
+    // Defaults
+    [self setProperty:@"defaults" fromConfig:config WithRules:propertiesRules[@"defaults"] AndWithSetter:^(id value) {
+        [blocksafeSelf setDefaults:value];
+    }];
+    
+    self.isConfigValid = YES;
+}
+
+#pragma mark - Private Methods
+
+- (void)setProperty:(NSString *)property fromConfig:(NSDictionary *)config WithRules:(NSDictionary*)rules AndWithSetter:(void (^)(id value))setterFunction {
+    
+    if ([config objectForKey:property]) {
+        setterFunction(config[property]);
+    } else {
+        if ([rules objectForKey:@"required"] && [rules[@"required"] isEqualTo:@YES]) {
+            @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error on config." userInfo:nil];
+        } else if ([rules objectForKey:@"default"]) {
+            setterFunction(rules[@"default"]);
+            [self.logger logError:@"Property %@ doesn't exist on config. Default value '%@' was applied.", property, rules[@"default"]];
+        }
+    }
+    
+}
+
+-(void)flushBuffer:(BOOL)force {
+    if (self.metricsBuffer.count >= self.flushSize.intValue || (force && self.metricsBuffer.count > 0)) {
+        NSString *metricsToFlush = [self.metricsBuffer componentsJoinedByString:@"\n"];
+        [self flushMetrics:metricsToFlush];
+        // TODO - maybe we should empty the buffer only if the metrics were sent successfully
+        [self.metricsBuffer removeAllObjects];
+    }
+}
+
+-(void)flushBufferWithTimer {
+    [self flushBuffer:YES];
+}
+
+-(void)flushMetrics:(NSString*)metrics {
+    if (self.isStarted) {
+        if ([self.dryrun isEqualTo:@YES]) {
+            [self.logger logDebug:@"%@",metrics];
+        } else {
+            NSData *metricsData = [metrics dataUsingEncoding:NSUTF8StringEncoding];
+            [self.connection sendMetricsData:metricsData completionBlock:^(BOOL success, NSError *error) {
+                if (success) {
+                    [self.logger logDebug:@"Metrics were flushed successfully."];
+                } else {
+                    [self.logger logError:@"An error has happened during metrics flush: %@.", error];
+                }
+            }];
+        }
+    } else {
+        [self.logger logError:@"Can't flush metrics while client is not started."];
+    }
+}
+
+-(NSDictionary*) calculateConfigForType:(NSString*) type {
+    return [self calculateConfigForType:type withOptions:nil];
+}
+
+-(NSDictionary*) calculateConfigForType:(NSString*) type withOptions:(NSDictionary*) methodOptions {
+    NSMutableDictionary* configOptions = [[NSMutableDictionary alloc]init];
+    NSMutableDictionary* methodGlobalDefaults = self.defaults[type];
+    
+    //Apply Global Tags and App tag if app was defined on client constructor
+    configOptions[@"tags"] = [NSMutableDictionary dictionaryWithDictionary:self.tags];
+    if ([self.app length] > 0) {
+        [configOptions[@"tags"] addEntriesFromDictionary:@{@"app": self.app}];
+    }
+    
+    configOptions[@"namespace"] = self.namespace;
+    configOptions[@"timestamp"] = CURRENT_TIMESTAMP;
+    
+    // Calculate Defaults
+    if ([methodGlobalDefaults objectForKey:@"tags"]) {
+        [configOptions[@"tags"] addEntriesFromDictionary:methodGlobalDefaults[@"tags"]];
+    } else {
+        [configOptions[@"tags"] addEntriesFromDictionary:kDefaultTagsByMethod[type]];
+    }
+    
+    if ([methodGlobalDefaults objectForKey:@"agg"]) {
+        configOptions[@"agg"] = methodGlobalDefaults[@"agg"];
+    } else {
+        configOptions[@"agg"] = kDefaultAggByMethod[type];
+    }
+    
+    if ([methodGlobalDefaults objectForKey:@"agg_freq"]) {
+        configOptions[@"agg_freq"] = methodGlobalDefaults[@"agg_freq"];
+    } else {
+        configOptions[@"agg_freq"] = kDefaultAggFreq;
+    }
+    
+    // Merge with methodOptions if exists
+    if (methodOptions != nil) {
+        if ([methodOptions objectForKey:@"tags"]) {
+            [configOptions[@"tags"] addEntriesFromDictionary:methodOptions[@"tags"]];
+        }
+        
+        if ([methodOptions objectForKey:@"agg"]) {
+            configOptions[@"agg"] = [self mergeArraysWithoutDuplicates:methodOptions[@"agg"] otherArray:configOptions[@"agg"]];
+        }
+        
+        if ([methodOptions objectForKey:@"agg_freq"]) {
+            configOptions[@"agg_freq"] = methodOptions[@"agg_freq"];
+        }
+        
+        if ([methodOptions objectForKey:@"namespace"]) {
+            configOptions[@"namespace"] = methodOptions[@"namespace"];
+        }
+        
+        if ([methodOptions objectForKey:@"timestamp"]) {
+            configOptions[@"timestamp"] = methodOptions[@"timestamp"];
+        }
+    }
+    
+    return configOptions;
+}
+
+-(NSArray*)mergeArraysWithoutDuplicates:(NSArray*)arrA otherArray:(NSArray*)arrB {
+    NSMutableSet *set = [[NSMutableSet alloc] init];
+    [set addObjectsFromArray:arrA];
+    [set addObjectsFromArray:arrB];
+    
+    return [[set allObjects] mutableCopy];
+}
+
+-(BOOL)isTagsValid:(id) tags {
+    return [tags isKindOfClass:[NSDictionary class]];
+}
+
+-(BOOL)isAggFreqValid:(id) aggFreq {
+    return [aggFreq isKindOfClass:[NSNumber class]] && [kSupportedAggFreq containsObject:aggFreq];
+}
+
+-(BOOL)isAggValid:(id) aggs {
+    BOOL isValid = YES;
+    
+    if ([aggs isKindOfClass:[NSArray class]]) {
+        for (NSString* agg in aggs) {
+            if (![kSupportedAgg containsObject:agg]) {
+                isValid = NO;
+                break;
+            }
+        }
+    } else {
+        isValid = NO;
+    }
+    
+    return isValid;
+}
+
+-(BOOL)isNamespaceValid:(id) namespace {
+    return [namespace isKindOfClass:[NSString class]];
+}
+
+-(BOOL)isTimestampValid:(id) timestamp {
+    return [timestamp isKindOfClass:[NSString class]];
+}
+
+FOUNDATION_STATIC_INLINE NSDictionary* getPropertiesRules() {
+    return @{
+             @"host": @{@"required":@NO, @"default":kDefaultHost},
+             @"port": @{@"required":@NO, @"default":kDefaultPort},
+             @"transport": @{@"required":@YES},
+             @"secure": @{@"required":@NO, @"default":kDefaultSecure},
+             @"timeout": @{@"required":@NO, @"default":kDefaultTimeout},
+             @"token": @{@"required":@NO},
+             @"app": @{@"required":@NO},
+             @"dryrun": @{@"required":@NO, @"default":kDefaultDryrun},
+             @"logger": @{@"required":@NO},
+             @"tags": @{@"required":@NO, @"default":kDefaultGlobalTags},
+             @"sample_rate": @{@"required":@NO, @"default":kDefaultSampleRate},
+             @"namespace": @{@"required":@NO, @"default":kDefaultNamespace},
+             @"flush_size": @{@"required":@NO, @"default":kDefaultFlushSize},
+             @"flush_interval": @{@"required":@NO, @"default":kDefaultFlushInterval},
+             @"defaults": @{@"required":@NO, @"default":kDefaultDefaults}
+             };
+}
+
+
+#pragma mark - Public Methods
+
+-(BOOL)start {
+    BOOL startedSucessfuly = NO;
+    
+    if (!self.isStarted) {
+        if (self.isConfigValid) {
+            @try {
+                // Clear buffer to start
+                [self.metricsBuffer removeAllObjects];
+                
+                // Init the transport layer and the flush rate timer
+                [self initTransportLayer];
+                [self initFlushTimer];
+                
+                self.isStarted = YES;
+                startedSucessfuly = YES;
+                [self.logger logDebug:@"Client was started."];
+            } @catch(NSException* e) {
+                [self.logger logError:e.reason];
+            }
+        } else {
+            [self.logger logDebug:@"Client config is not valid."];
+        }
+    } else {
+        [self.logger logDebug:@"Client is already running."];
+    }
+    
+    return startedSucessfuly;
+}
+
+-(BOOL)stop {
+    BOOL stoppedSucessfuly = NO;
+    
+    if (self.isStarted) {
+        [self.flushTimer invalidate];
+        [self flushBuffer:YES];
+        
+        self.isStarted = NO;
+        stoppedSucessfuly = YES;
+        [self.logger logDebug:@"Client was stopped."];
+    } else {
+        [self.logger logDebug:@"Client is not started."];
+    }
+    
+    return stoppedSucessfuly;
+}
+
+-(void)counterWithName:(NSString*)name value:(NSNumber*)value {
+    [self counterWithName:name value:value options:nil];
+}
+
+-(void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
+    [self methodWithType:@"counter" name:name value:value options:options];
+}
+
+-(void)gaugeWithName:(NSString*)name value:(NSNumber*)value {
+    [self gaugeWithName:name value:value options:nil];
+}
+
+-(void)gaugeWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
+    [self methodWithType:@"gauge" name:name value:value options:options];
+}
+
+-(void)timerWithName:(NSString*)name value:(NSNumber*)value {
+    [self timerWithName:name value:value options:nil];
+}
+
+-(void)timerWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options {
+    [self methodWithType:@"timer" name:name value:value options:options];
+}
+
+#pragma mark - Custom Accessors
 
 - (void)setDefaults:(id)defaults {
     if (![defaults isKindOfClass:[NSDictionary class]]) {
@@ -416,262 +675,6 @@
     } else {
         @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error setting logger: should be an instance of a custom implementation of DDAbstractLogger<DDLogger> or a default implementation like: [DDTTYLogger sharedInstance] or [DDASLLogger sharedInstance]. Read CocoaLumberjack documentation to get more information." userInfo:nil];
     }
-}
-
--(void)validateAndSetConfig:(NSDictionary *)config {
-    __block SFClient *blocksafeSelf = self;
-    NSDictionary* propertiesRules = getPropertiesRules();
-    
-    // Logger
-    [self setProperty:@"logger" fromConfig:config WithRules:propertiesRules[@"logger"] AndWithSetter:^(id value) {
-        [blocksafeSelf setLogger:value];
-    }];
-    
-    // Host
-    [self setProperty:@"host" fromConfig:config WithRules:propertiesRules[@"host"] AndWithSetter:^(id value) {
-        [blocksafeSelf setHost:value];
-    }];
-    
-    // Port
-    [self setProperty:@"port" fromConfig:config WithRules:propertiesRules[@"port"] AndWithSetter:^(id value) {
-        [blocksafeSelf setPort:value];
-    }];
-    
-    // Transport
-    [self setProperty:@"transport" fromConfig:config WithRules:propertiesRules[@"transport"] AndWithSetter:^(id value) {
-        [blocksafeSelf setTransport:[((NSNumber*)value) intValue]];
-    }];
-    
-    // Secure
-    [self setProperty:@"secure" fromConfig:config WithRules:propertiesRules[@"secure"] AndWithSetter:^(id value) {
-        [blocksafeSelf setSecure:value];
-    }];
-    
-    // Timeout
-    [self setProperty:@"timeout" fromConfig:config WithRules:propertiesRules[@"timeout"] AndWithSetter:^(id value) {
-        [blocksafeSelf setTimeout:value];
-    }];
-    
-    // Token
-    [self setProperty:@"token" fromConfig:config WithRules:propertiesRules[@"token"] AndWithSetter:^(id value) {
-        [blocksafeSelf setToken:value];
-    }];
-    
-    // App
-    [self setProperty:@"app" fromConfig:config WithRules:propertiesRules[@"app"] AndWithSetter:^(id value) {
-        [blocksafeSelf setApp:value];
-    }];
-    
-    // Dryrun
-    [self setProperty:@"dryrun" fromConfig:config WithRules:propertiesRules[@"dryrun"] AndWithSetter:^(id value) {
-        [blocksafeSelf setDryrun:value];
-    }];
-    
-    // Tags
-    [self setProperty:@"tags" fromConfig:config WithRules:propertiesRules[@"tags"] AndWithSetter:^(id value) {
-        [blocksafeSelf setTags:value];
-    }];
-    
-    // Sample Rate
-    [self setProperty:@"sample_rate" fromConfig:config WithRules:propertiesRules[@"sample_rate"] AndWithSetter:^(id value) {
-        [blocksafeSelf setSampleRate:value];
-    }];
-    
-    // Flush Size
-    [self setProperty:@"flush_size" fromConfig:config WithRules:propertiesRules[@"flush_size"] AndWithSetter:^(id value) {
-        [blocksafeSelf setFlushSize:value];
-    }];
-    
-    // Flush Interval
-    [self setProperty:@"flush_interval" fromConfig:config WithRules:propertiesRules[@"flush_interval"] AndWithSetter:^(id value) {
-        [blocksafeSelf setFlushInterval:value];
-    }];
-    
-    // Namespace
-    [self setProperty:@"namespace" fromConfig:config WithRules:propertiesRules[@"namespace"] AndWithSetter:^(id value) {
-        [blocksafeSelf setNamespace:value];
-    }];
-    
-    // Defaults
-    [self setProperty:@"defaults" fromConfig:config WithRules:propertiesRules[@"defaults"] AndWithSetter:^(id value) {
-        [blocksafeSelf setDefaults:value];
-    }];
-    
-    _isConfigValid = YES;
-}
-
-#pragma mark - Private Methods
-
-- (void)setProperty:(NSString *)property fromConfig:(NSDictionary *)config WithRules:(NSDictionary*)rules AndWithSetter:(void (^)(id value))setterFunction {
-    
-    if ([config objectForKey:property]) {
-        setterFunction(config[property]);
-    } else {
-        if ([rules objectForKey:@"required"] && [rules[@"required"] isEqualTo:@YES]) {
-            @throw [NSException exceptionWithName:@"SFClientConfigError" reason:@"Error on config." userInfo:nil];
-        } else if ([rules objectForKey:@"default"]) {
-            setterFunction(rules[@"default"]);
-            [_logger logError:@"Property %@ doesn't exist on config. Default value '%@' was applied.", property, rules[@"default"]];
-        }
-    }
-    
-}
-
--(void)flushBuffer:(BOOL)force {
-    if (self.metricsBuffer.count >= self.flushSize.intValue || (force && self.metricsBuffer.count > 0)) {
-        NSString *metricsToFlush = [self.metricsBuffer componentsJoinedByString:@"\n"];
-        [self flushMetrics:metricsToFlush];
-        // TODO - maybe we should empty the buffer only if the metrics were sent successfully
-        [self.metricsBuffer removeAllObjects];
-    }
-}
-
--(void)flushBufferWithTimer {
-    [self flushBuffer:YES];
-}
-
--(void)flushMetrics:(NSString*)metrics {
-    if (_isStarted) {
-        if ([self.dryrun isEqualTo:@YES]) {
-            [_logger logDebug:@"%@",metrics];
-        } else {
-            NSData *metricsData = [metrics dataUsingEncoding:NSUTF8StringEncoding];
-            [self.connection sendMetricsData:metricsData completionBlock:^(BOOL success, NSError *error) {
-                if (success) {
-                    [_logger logDebug:@"Metrics were flushed successfully."];
-                } else {
-                    [_logger logError:@"An error has happened during metrics flush: %@.", error];
-                }
-            }];
-        }
-    } else {
-        [_logger logError:@"Can't flush metrics while client is not started."];
-    }
-}
-
--(NSDictionary*) calculateConfigForType:(NSString*) type {
-    return [self calculateConfigForType:type withOptions:nil];
-}
-
--(NSDictionary*) calculateConfigForType:(NSString*) type withOptions:(NSDictionary*) methodOptions {
-    NSMutableDictionary* configOptions = [[NSMutableDictionary alloc]init];
-    NSMutableDictionary* methodGlobalDefaults = _defaults[type];
-    
-    //Apply Global Tags and App tag if app was defined on client constructor
-    configOptions[@"tags"] = [NSMutableDictionary dictionaryWithDictionary:_tags];
-    if ([_app length] > 0) {
-        [configOptions[@"tags"] addEntriesFromDictionary:@{@"app": _app}];
-    }
-    
-    configOptions[@"namespace"] = _namespace;
-    configOptions[@"timestamp"] = CURRENT_TIMESTAMP;
-    
-    // Calculate Defaults
-    if ([methodGlobalDefaults objectForKey:@"tags"]) {
-        [configOptions[@"tags"] addEntriesFromDictionary:methodGlobalDefaults[@"tags"]];
-    } else {
-        [configOptions[@"tags"] addEntriesFromDictionary:kDefaultTagsByMethod[type]];
-    }
-    
-    if ([methodGlobalDefaults objectForKey:@"agg"]) {
-        configOptions[@"agg"] = methodGlobalDefaults[@"agg"];
-    } else {
-        configOptions[@"agg"] = kDefaultAggByMethod[type];
-    }
-    
-    if ([methodGlobalDefaults objectForKey:@"agg_freq"]) {
-        configOptions[@"agg_freq"] = methodGlobalDefaults[@"agg_freq"];
-    } else {
-        configOptions[@"agg_freq"] = kDefaultAggFreq;
-    }
-    
-    // Merge with methodOptions if exists
-    if (methodOptions != nil) {
-        if ([methodOptions objectForKey:@"tags"]) {
-            [configOptions[@"tags"] addEntriesFromDictionary:methodOptions[@"tags"]];
-        }
-        
-        if ([methodOptions objectForKey:@"agg"]) {
-            configOptions[@"agg"] = [self mergeArraysWithoutDuplicates:methodOptions[@"agg"] otherArray:configOptions[@"agg"]];
-        }
-        
-        if ([methodOptions objectForKey:@"agg_freq"]) {
-            configOptions[@"agg_freq"] = methodOptions[@"agg_freq"];
-        }
-        
-        if ([methodOptions objectForKey:@"namespace"]) {
-            configOptions[@"namespace"] = methodOptions[@"namespace"];
-        }
-        
-        if ([methodOptions objectForKey:@"timestamp"]) {
-            configOptions[@"timestamp"] = methodOptions[@"timestamp"];
-        }
-    }
-    
-    
-    return configOptions;
-}
-
--(NSArray*)mergeArraysWithoutDuplicates:(NSArray*)arrA otherArray:(NSArray*)arrB {
-    NSMutableSet *set = [[NSMutableSet alloc] init];
-    [set addObjectsFromArray:arrA];
-    [set addObjectsFromArray:arrB];
-    
-    return [[set allObjects] mutableCopy];
-}
-
--(BOOL)isTagsValid:(id) tags {
-    return [tags isKindOfClass:[NSDictionary class]];
-}
-
--(BOOL)isAggFreqValid:(id) aggFreq {
-    return [aggFreq isKindOfClass:[NSNumber class]] && [kSupportedAggFreq containsObject:aggFreq];
-}
-
--(BOOL)isAggValid:(id) aggs {
-    BOOL isValid = YES;
-    
-    if ([aggs isKindOfClass:[NSArray class]]) {
-        for (NSString* agg in aggs) {
-            if (![kSupportedAgg containsObject:agg]) {
-                isValid = NO;
-                break;
-            }
-        }
-    } else {
-        isValid = NO;
-    }
-    
-    return isValid;
-}
-
--(BOOL)isNamespaceValid:(id) namespace {
-    return [namespace isKindOfClass:[NSString class]];
-}
-
--(BOOL)isTimestampValid:(id) timestamp {
-    return [timestamp isKindOfClass:[NSString class]];
-}
-
-FOUNDATION_STATIC_INLINE NSDictionary* getPropertiesRules() {
-    
-    return @{
-             @"host": @{@"required":@NO, @"default":kDefaultHost},
-             @"port": @{@"required":@NO, @"default":kDefaultPort},
-             @"transport": @{@"required":@YES},
-             @"secure": @{@"required":@NO, @"default":kDefaultSecure},
-             @"timeout": @{@"required":@NO, @"default":kDefaultTimeout},
-             @"token": @{@"required":@NO},
-             @"app": @{@"required":@NO},
-             @"dryrun": @{@"required":@NO, @"default":kDefaultDryrun},
-             @"logger": @{@"required":@NO},
-             @"tags": @{@"required":@NO, @"default":kDefaultGlobalTags},
-             @"sample_rate": @{@"required":@NO, @"default":kDefaultSampleRate},
-             @"namespace": @{@"required":@NO, @"default":kDefaultNamespace},
-             @"flush_size": @{@"required":@NO, @"default":kDefaultFlushSize},
-             @"flush_interval": @{@"required":@NO, @"default":kDefaultFlushInterval},
-             @"defaults": @{@"required":@NO, @"default":kDefaultDefaults}
-    };
 }
 
 @end

@@ -89,11 +89,9 @@
 
 - (void)sendMetricsData:(id)metricsData completionBlock:(SFCommunicationCompletionBlock)completionBlock {
     NSError *error = nil;
-    
     NSMutableURLRequest *request = [self.manager.requestSerializer requestWithMethod:@"PUT" URLString:[_requestURL absoluteString] parameters:nil error:&error];
     
     if (request) {
-        
         NSMutableData *postBody = [NSMutableData data];
         [postBody appendData:metricsData];
         [request setHTTPBody:postBody];

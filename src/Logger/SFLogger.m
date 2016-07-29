@@ -48,6 +48,8 @@ static DDLogLevel ddLogLevel = (DDLogLevel)SFLoggerLogLevelError;
     return [self initWithDDLoggerInstance:nil loggerLevel:-1];
 }
 
+#pragma mark - Custom Accessors
+
 -(void)setLogger:(DDAbstractLogger<DDLogger> *)logger {
     if ([logger isKindOfClass:[DDAbstractLogger class]] && logger != nil) {
         _logger = logger;

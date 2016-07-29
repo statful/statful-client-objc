@@ -34,10 +34,19 @@
 #pragma mark - Convenience Initialisers
 + (instancetype)clientWithConfig:(NSDictionary*)config;
 - (instancetype)initWithConfig:(NSDictionary*)config NS_DESIGNATED_INITIALIZER;
-- (BOOL)start;
-- (BOOL)stop;
 
 #pragma mark - Public Methods
+/**
+ *  This method tries to start the client and returns a boolean. If it succeeds it becomes possible send metrics.
+ */
+- (BOOL)start;
+
+/**
+ *  This method tries to stop the client and also send all the metrics sill in the buffer returning a boolean. 
+ *  If it succeeds it becomes impossible send metrics.
+ */
+- (BOOL)stop;
+
 /**
  *  Sends a counter metric wihtout options
  *
