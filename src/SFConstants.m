@@ -70,7 +70,7 @@ void __attribute__((constructor)) initializeConstants() {
                              @"gauge": @[@"last"]
     };
     kSupportedAgg = @[@"avg", @"count", @"sum", @"first", @"last",
-                               @"p90", @"p95", @"min", @"max", @"derivative"];
+                               @"p90", @"p95", @"min", @"max"];
     kSupportedAggFreq = @[@10, @30, @60, @120, @180, @300];
 }
 
