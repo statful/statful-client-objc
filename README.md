@@ -282,7 +282,7 @@ This is a class method that receives a `NSDictionary *` with configuration  and 
 The custom options that can be setted on config param are detailed below.
 
 | Option | Description | Type | Default | Required |
-|:---|:---|:---|:---|
+|:---|:---|:---|:---|:---|
 | _app_ | Defines the application global option. If specified sets a global tag `app=settedValue`. | `NSString*` | **none** | **NO** |
 | _defaults_ | Desc 1 | `NSDictionary*` | `@{}` | **NO** |
 | _dryrun_ | Defines if metrics should be outputed to the logger instead of being sent. | `NSNumber*` | `@NO` | **NO** |
@@ -330,7 +330,7 @@ These method receives a string name, a number value, a dictionary with options a
 The custom options that can be setted on options param are detailed below.
 
 | Option | Description | Type | Default for Counter | Default for Gauge | Default for Timer |
-|:---|:---|:---|:---|
+|:---|:---|:---|:---|:---|:---|
 | _agg_ | Defines the aggregations to send with metric. It merges with priority with previous defined default per method aggregations on client configuration.<br><br> **Valid Aggregations:** `@"avg", @"count", @"sum", @"first", @"last", @"p90", @"p95", @"min", @"max", @"derivative"` | `NSArray*` | `@[@"avg", @"p90"]` | `@[@"last"]` | `@[@"avg", @"p90", @"count"]` |
 | _agg_freq_ | Defines the aggregation frequency in **seconds** of the metric. It replaces the previous defined default per method aggregation frequency on client configuration.<br><br> **Valid Aggregation Frequencies:** `@10, @30, @60 ,@120, @180, @300` | `NSNumber*` | `@10` | `@10` | `@10` |
 | _namespace_ | Defines the namespace to send with metric. It replaces the previous defined global namespace on client configuration. | `NSString*` | `@"application"` | `@"application"` | `@"application"` |
