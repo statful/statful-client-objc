@@ -26,7 +26,6 @@
 @implementation SFConstants
 //Primitive Types
 SFLoggerLogLevel kDefaultLoggerLevel = SFLoggerLogLevelError;
-NSString* const kApiPath = @"/tel/v2.0/metrics";
 NSString* const kDefaultNamespace = @"application";
 NSString* const kUserAgent = @"statful-client-objc";
 NSString* const kDefaultPort = @"2013";

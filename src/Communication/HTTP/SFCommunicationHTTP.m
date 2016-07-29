@@ -48,13 +48,14 @@
             BOOL secure = [dictionary[@"secure"] boolValue];
             NSString *host = dictionary[@"host"];
             NSString *port = dictionary[@"port"];
+            NSString *urlWithoutProtocol = [NSString stringWithFormat:@"%@:%@", host, port];
 
             NSURL *url;
             
             if (secure) {
-                url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@:%@%@", @"https://", host, port, kApiPath]];
+                url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", @"https://", urlWithoutProtocol]];
             } else {
-                url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@:%@%@", @"http://", host, port, kApiPath]];
+                url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", @"http://", urlWithoutProtocol]];
             }
             
             url;

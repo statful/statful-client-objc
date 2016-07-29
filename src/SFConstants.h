@@ -41,7 +41,6 @@ typedef NS_ENUM(NSUInteger, SFLoggerLogLevel) {
     SFLoggerLogLevelDebug = DDLogLevelDebug,
     SFLoggerLogLevelVerbose = DDLogLevelVerbose
 };
-FOUNDATION_EXTERN NSString* const kApiPath;
 FOUNDATION_EXTERN NSString* const kDefaultNamespace;
 FOUNDATION_EXTERN NSString* const kUserAgent;
 FOUNDATION_EXTERN SFLoggerLogLevel kDefaultLoggerLevel;
