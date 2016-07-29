@@ -22,7 +22,6 @@
 //
 
 // TODO: Review this points
-// - Public Documentation
 // - Reject config if provided general tags has two equal keys
 // - Add block to flush buffer method
 // - Add some unit tests with stub dependencies methods

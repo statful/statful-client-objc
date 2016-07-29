@@ -281,9 +281,23 @@ The Client used to send metrics for the system.
 This is a class method that receives a `NSDictionary *` with configuration  and returns a new `SFClient.
 The custom options that can be setted on config param are detailed below.
 
-| Option | Description | Type | Default |
+| Option | Description | Type | Default | Required |
 |:---|:---|:---|:---|
-| Option 1 | Desc 1 | NSObject | nil |
+| _app_ | Defines the application global option. If specified sets a global tag `app=settedValue`. | `NSString*` | **none** | **NO** |
+| _defaults_ | Desc 1 | `NSDictionary*` | `@{}` | **NO** |
+| _dryrun_ | Defines if metrics should be outputed to the logger instead of being sent. | `NSNumber*` | `@NO` | **NO** |
+| _flush_interval_ | Defines the periodicity of buffer flush in **miliseconds**. | `NSNumber*` | `@10000` | **NO** |
+| _flush_size_ | Defines the number of metrics that the buffer should have to make a flush. | `NSNumber*` | `@10` | **NO** |
+| _host_ | Defines the host for which metrics should be sent. | `NSString*` | `@"127.0.0.1"` | **NO** |
+| _logger_ | Defines the internal logger instance according to `DDLogger` protocol from [CocoaLumberjack](https://github.com/CocoaLumberjack/CocoaLumberjack) used by SFLogger to output the messages. It can be one already defined by CocoaLumberjack like `DTTYLogger`, `DDASLLogger`, `DDFileLogger` or any other custom logger object that complies with `DDAbstractLogger <DDLogger>` from CocoaLumberjack. | `DDAbstractLogger <DDLogger> *` | **none** | **NO** |
+| _namespace_ | Defines the global namespace. | `NSString*` | `@"application"` | **NO** |
+| _port_ | Defines the host por for which metrics should be sent. | `NSString*` | `@"2013"` | **NO** |
+| _sample_rate_ | Defines the rate sampling. **Should be a number between [1, 100]**. | `NSNumber*` | `@100` | **NO** |
+| _secure_ | Enable or disable https protocol. | `NSNumber*` | `@"true"` | **NO** |
+| _tags_ | Defines the global tags. | `NSDictionary*` | `@{}` | **NO** |
+| _timeout_ | Defines the timeout for the transport layers. | `NSNumber*` | `@2000` | **NO** |
+| _token_ | Defines the token to be used  `SFClientTransportAPI`.  | `NSString*` | **none** | **NO** |
+| _transport_ | Defines the transport layer to be used to send metrics.<br><br> **Valid Transports:** `SFClientTransportAPI, SFClientTransportUDP` | `NSNumber*` | **none** | **YES** |
 
 ```objc
 - (BOOL)start
@@ -303,7 +317,8 @@ This method tries to stop the client and also send all the metrics sill in the b
 - (void)timerWithName:(NSString*)name value:(NSNumber*)value
 ```
 
-These method receives a string name and a number value and sends a simple counter/gauge/timer metric (without any custom options).
+These method receives a string name and a number value and sends a simple counter/gauge/timer metric (with default method options).
+Read the reference of methods with options params to know the defaults.
 
 ```objc
 - (void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
@@ -314,17 +329,21 @@ These method receives a string name and a number value and sends a simple counte
 These method receives a string name, a number value, a dictionary with options and sends a counter/gauge/timer metric with custom options.
 The custom options that can be setted on options param are detailed below.
 
-| Option | Description | Type | Default |
+| Option | Description | Type | Default for Counter | Default for Gauge | Default for Timer |
 |:---|:---|:---|:---|
-| Option 1 | Desc 1 | NSObject | nil |
+| _agg_ | Defines the aggregations to send with metric. It merges with priority with previous defined default per method aggregations on client configuration.<br><br> **Valid Aggregations:** `@"avg", @"count", @"sum", @"first", @"last", @"p90", @"p95", @"min", @"max", @"derivative"` | `NSArray*` | `@[@"avg", @"p90"]` | `@[@"last"]` | `@[@"avg", @"p90", @"count"]` |
+| _agg_freq_ | Defines the aggregation frequency in **seconds** of the metric. It replaces the previous defined default per method aggregation frequency on client configuration.<br><br> **Valid Aggregation Frequencies:** `@10, @30, @60 ,@120, @180, @300` | `NSNumber*` | `@10` | `@10` | `@10` |
+| _namespace_ | Defines the namespace to send with metric. It replaces the previous defined global namespace on client configuration. | `NSString*` | `@"application"` | `@"application"` | `@"application"` |
+| _tags_ | Defines the tags to send with metric. It merges with priority with previous defined global tags and default per method tags on client configuration. | `NSDictionary*` | `@{}` | `@{}` | `@{@"unit": @"ms"}` |
+| _timestamp_ | Defines the timestamp of the metric. This timestamp is a **POSIX/Epoch** time in **seconds**. | `NSString*` | `current timestamp` | `current timestamp` | `current timestamp` |
 
 #### Properties
 
 | Property | Type | Description | Access  |
 |:---|:---|:---|:---|
-| _logger_ | `SFLogger*` | The logger object used by client. | readonly |
-| _isConfigValid_ | `BOOL` | A boolean value indicating whether the setted config is valid. | readonly |
-| _isStarted_ | `BOOL` | A boolean value indicating whether the client is started. | readonly |
+| _logger_ | `SFLogger*` | The logger object used by client. | **readonly** |
+| _isConfigValid_ | `BOOL` | A boolean value indicating whether the setted config is valid. | **readonly** |
+| _isStarted_ | `BOOL` | A boolean value indicating whether the client is started. | **readonly** |
 
 ### Logger
 
@@ -373,8 +392,8 @@ This method receives a string format followed by the format params (seperated by
 
 | Property | Type | Description | Access  |
 |:---|:---|:---|:---|
-| _logger_ | `DDAbstractLogger <DDLogger> *` | The internal logger instance according DDLogger protocol from CocoaLumberjack used by SFLogger to output messages. It can be one already defined by CocoaLumberjack like `DTTYLogger`, `DDASLLogger`, `DDFileLogger` or any other custom logger object that complies with `DDAbstractLogger <DDLogger>` from [CocoaLumberjack](https://github.com/CocoaLumberjack/CocoaLumberjack). | readwrite |
-| _loggerLevel_ | `SFLoggerLogLevel ` | The logger level used to select which messages should be outputed. It can be  | readwrite |
+| _logger_ | `DDAbstractLogger <DDLogger> *` | The internal logger instance according DDLogger protocol from [CocoaLumberjack](https://github.com/CocoaLumberjack/CocoaLumberjack) used by SFLogger to output messages. It can be one already defined by CocoaLumberjack like `DTTYLogger`, `DDASLLogger`, `DDFileLogger` or any other custom logger object that complies with `DDAbstractLogger <DDLogger>` from CocoaLumberjack. | **readwrite** |
+| _loggerLevel_ | `SFLoggerLogLevel ` | The logger level used to select which messages should be outputed. It can be  | **readwrite** |
 
 
 ## Still Need Help?
