@@ -1,6 +1,6 @@
 # Statful Client Objective-C
 
-[![Build Status](https://travis-ci.org/statful/statful-client-objc.svg?branch=master)](https://https://travis-ci.org/statful/statful-client-objc)
+[![Build Status](https://travis-ci.org/statful/statful-client-objc.svg?branch=master)](https://travis-ci.org/statful/statful-client-objc)
 
 Statful client for OS-X and iOS written in Objective-C.
 This client is intended to gather metrics and send them to the Statful service.
@@ -21,7 +21,7 @@ Please check out our [website](http://statful.com) or our extended [documentatio
 ## Supported Platforms
 
 | StatfulClient Version | Minimum iOS Target  | Minimum macOS Target  | Minimum watchOS Target  | Minimum tvOS Target  | Notes |
-|:---------------------:|:-------------------:|:---------------------:|:-----------------------:|:--------------------:|:-----:|
+|:---|:---|:---|:---|:---|:---|
 | 1.0.x | 6.0 | 10.8 | n/a | n/a | Xcode 7+ is required |
 
 > **IMPORTANT:** Your project must support [64-bit with modern Cocoa runtime](https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtVersionsPlatforms.html)).
@@ -278,42 +278,50 @@ The Client used to send metrics for the system.
 + (instancetype)clientWithConfig:(NSDictionary*)config
 ```
 
+This is a class method that receives a `NSDictionary *` with configuration  and returns a new `SFClient.
+The custom options that can be setted on config param are detailed below.
+
+| Option | Description | Type | Default |
+|:---|:---|:---|:---|
+| Option 1 | Desc 1 | NSObject | nil |
+
 ```objc
 - (BOOL)start
 ```
+
+This method tries to start the client and returns a boolean. If it succeeds it becomes possible send metrics. 
 
 ```objc
 - (BOOL)stop
 ```
 
+This method tries to stop the client and also send all the metrics sill in the buffer returning a boolean. If it succeeds it becomes impossible send metrics. 
+
 ```objc
 - (void)counterWithName:(NSString*)name value:(NSNumber*)value
-```
-
-```objc
-- (void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
-```
-
-```objc
-- (void)gaugeWithName:(NSString*)name value:(NSNumber*)value 
-```
-
-```objc
-- (void)gaugeWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
-```
-
-```objc
+- (void)gaugeWithName:(NSString*)name value:(NSNumber*)value
 - (void)timerWithName:(NSString*)name value:(NSNumber*)value
 ```
 
+These method receives a string name and a number value and sends a simple counter/gauge/timer metric (without any custom options).
+
 ```objc
+- (void)counterWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
+- (void)gaugeWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
 - (void)timerWithName:(NSString*)name value:(NSNumber*)value options:(NSDictionary*)options
 ```
+
+These method receives a string name, a number value, a dictionary with options and sends a counter/gauge/timer metric with custom options.
+The custom options that can be setted on options param are detailed below.
+
+| Option | Description | Type | Default |
+|:---|:---|:---|:---|
+| Option 1 | Desc 1 | NSObject | nil |
 
 #### Properties
 
 | Property | Type | Description | Access  |
-|:---:|:---:|:---:|:---:|
+|:---|:---|:---|:---|
 | _logger_ | `SFLogger*` | The logger object used by client. | readonly |
 | _isConfigValid_ | `BOOL` | A boolean value indicating whether the setted config is valid. | readonly |
 | _isStarted_ | `BOOL` | A boolean value indicating whether the client is started. | readonly |
