@@ -5,7 +5,7 @@
 Statful client for OS-X and iOS written in Objective-C.
 This client is intended to gather metrics and send them to the Statful service.
 
-Please check out our [website](http://statful.com) or our extended [documentation](http://statful.com/docs) for a comprehensive look at all features available on Statful.
+[//]: # (Please check out our [website](http://statful.com) or our extended [documentation](http://statful.com/docs) for a comprehensive look at all features available on Statful.)
 
 ## Table of Contents
 
@@ -254,7 +254,7 @@ SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
 
 ## Reference 
 
-Our Statful Client API it's very simple. However you can check all the details about that here.
+Our Statful Client API it's very simple. You can browse the full reference below.
 
 ### Client
 
@@ -397,11 +397,13 @@ This method receives a string format followed by the format params (seperated by
 
 
 ## Still Need Help?
-If you are feeling that you're still needing help, please visit our oficial full [Statful Documentation](http://statful.com/docs) page.
+[//]: # (If you are feeling that you're still needing help, please visit our oficial full [Statful Documentation](http://statful.com/docs) page.)
+
+If you are feeling that you're still needing help, please visit our oficial full Statful Documentation page.
 
 ## Authors
 
-[Tiago Costa](https://github.com/misticini), tiago.ferreira@mindera.com
+[Mindera - Software Craft](https://github.com/Mindera)
 
 ## License
 
