@@ -24,7 +24,7 @@ This client is intended to gather metrics and send them to the Statful service.
 |:---|:---|:---|:---|:---|:---|
 | 1.0.x | 6.0 | 10.8 | n/a | n/a | Xcode 7+ is required |
 
-> **IMPORTANT:** Your project must support [64-bit with modern Cocoa runtime](https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtVersionsPlatforms.html)).
+> **IMPORTANT:** Your project must support [64-bit with modern Cocoa runtime](https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtVersionsPlatforms.html).
 
 ## Installation
 Currently Statful Client Objective-C can only be installed with CocoaPods.
