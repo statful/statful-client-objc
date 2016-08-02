@@ -17,7 +17,7 @@ Statful client for macOS and iOS written in Objective-C. This client is intended
 
   s.homepage         = 'https://github.com/statful/statful-client-objc'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
-  s.author           = { 'Tiago Costa' => 'tiago.ferreira@mindera.com' }
+  s.author           = 'Mindera - Software Craft'
   s.source           = { :git => 'https://github.com/statful/statful-client-objc.git', :tag => s.version.to_s }
 
   s.ios.deployment_target = '8.0'
