@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/statful/statful-client-objc.svg?branch=master)](https://travis-ci.org/statful/statful-client-objc)
 
-Statful client for OS-X and iOS written in Objective-C.
+Statful client for macOS and iOS written in Objective-C.
 This client is intended to gather metrics and send them to the Statful service.
 
 [//]: # (Please check out our [website](http://statful.com) or our extended [documentation](http://statful.com/docs) for a comprehensive look at all features available on Statful.)
@@ -20,7 +20,7 @@ This client is intended to gather metrics and send them to the Statful service.
 
 ## Supported Platforms
 
-| StatfulClient Version | Minimum iOS Target  | Minimum macOS Target  | Minimum watchOS Target  | Minimum tvOS Target  | Notes |
+| Statful Client Version | Minimum iOS Target  | Minimum macOS Target  | Minimum watchOS Target  | Minimum tvOS Target  | Notes |
 |:---|:---|:---|:---|:---|:---|
 | 1.0.x | 6.0 | 10.8 | n/a | n/a | Xcode 7+ is required |
 
@@ -72,7 +72,7 @@ SFClient *statfulClient = [SFClient clientWithConfig:clientConfig];
 // Send a metric
 [statfulClient counterWithName:@"testCounter" value:@0];
 
-// Stop the client before exit yout application to ensure you'll not loose metrics
+// Stop the client before exit your application to ensure you'll not loose metrics
 // Every metric in the buffer is sent when client stop is called
 [statfulClient stop];
 ```
@@ -278,8 +278,8 @@ The Client used to send metrics for the system.
 + (instancetype)clientWithConfig:(NSDictionary*)config
 ```
 
-This is a class method that receives a `NSDictionary *` with configuration  and returns a new `SFClient.
-The custom options that can be setted on config param are detailed below.
+This is a class method that receives a `NSDictionary *` with configuration  and returns a new `SFClient`.
+The custom options that can be set on config param are detailed below.
 
 | Option | Description | Type | Default | Required |
 |:---|:---|:---|:---|:---|
@@ -309,7 +309,7 @@ This method tries to start the client and returns a boolean. If it succeeds it b
 - (BOOL)stop
 ```
 
-This method tries to stop the client and also send all the metrics sill in the buffer returning a boolean. If it succeeds it becomes impossible send metrics. 
+This method tries to stop the client and also send all the metrics still in the buffer returning a boolean. If it succeeds it becomes impossible send metrics. 
 
 ```objc
 - (void)counterWithName:(NSString*)name value:(NSNumber*)value
