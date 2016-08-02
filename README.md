@@ -22,7 +22,7 @@ This client is intended to gather metrics and send them to the Statful service.
 
 | Statful Client Version | Minimum iOS Target  | Minimum macOS Target  | Minimum watchOS Target  | Minimum tvOS Target  | Notes |
 |:---|:---|:---|:---|:---|:---|
-| 1.0.x | 6.0 | 10.8 | n/a | n/a | Xcode 7+ is required |
+| 1.0.x | 8.0 | 10.8 | n/a | n/a | Xcode 7+ is required |
 
 > **IMPORTANT:** Your project must support [64-bit with modern Cocoa runtime](https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtVersionsPlatforms.html).
 
@@ -52,6 +52,10 @@ $ pod install
 At this point you only need to include Statful Client into your project to start using it. 
 
 ```objc
+#import <StatfulClient/SFClient.h>
+
+//OR
+
 #import "SFClient.h"
 ```
 

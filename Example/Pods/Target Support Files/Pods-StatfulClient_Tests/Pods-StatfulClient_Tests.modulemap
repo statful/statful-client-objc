@@ -1,0 +1,6 @@
+framework module Pods_StatfulClient_Tests {
+  umbrella header "Pods-StatfulClient_Tests-umbrella.h"
+
+  export *
+  module * { export * }
+}

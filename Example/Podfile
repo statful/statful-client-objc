@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'StatfulClient_Example' do
+  pod 'StatfulClient', :path => '../'
+
+  target 'StatfulClient_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
