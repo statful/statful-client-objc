@@ -19,13 +19,7 @@
     "ios": "8.0",
     "osx": "10.8"
   },
-  "source_files": "StatfulClient/Classes/**/*.{h,m}",
-  "public_header_files": [
-    "Pod/Classes/SFClient.h",
-    "Pod/Classes/SFConstants.h",
-    "Pod/Classes/Logger/SFLogger.h",
-    "Pod/Classes/Communication/SFCommunicationProtocol.h"
-  ],
+  "source_files": "StatfulClient/**/*.{h,m}",
   "dependencies": {
     "CocoaLumberjack": [
       "~> 2.0.0"
