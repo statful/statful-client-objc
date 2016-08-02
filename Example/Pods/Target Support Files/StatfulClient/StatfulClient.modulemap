@@ -1,0 +1,6 @@
+framework module StatfulClient {
+  umbrella header "StatfulClient-umbrella.h"
+
+  export *
+  module * { export * }
+}
