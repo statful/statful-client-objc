@@ -51,7 +51,7 @@ SPEC CHECKSUMS:
   AFNetworking: cb8d14a848e831097108418f5d49217339d4eb60
   CocoaAsyncSocket: a18c75dca4b08723628a0bacca6e94803d90be91
   CocoaLumberjack: f58d8a19629f4d8379ae14bb3534def24161430e
-  StatfulClient: dc0a24d15c66bf6263aafeeb5c580cca153fd4b7
+  StatfulClient: fb737a47019fb9c5ad0acf1d7311d5ef8af708b1
 
 PODFILE CHECKSUM: f19da0544c99c7355a2db9456c22789cde922f61
 

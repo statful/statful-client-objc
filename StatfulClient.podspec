@@ -23,7 +23,7 @@ Statful client for macOS and iOS written in Objective-C. This client is intended
   s.ios.deployment_target = '8.0'
   s.osx.deployment_target = '10.8'
 
-  s.source_files = 'StatfulClient/Classes/**/*.{h,m}'
+  s.source_files = 'StatfulClient/**/*.{h,m}'
   
   s.dependency 'CocoaLumberjack', '~> 2.0.0'
   s.dependency 'CocoaAsyncSocket', '~> 7.4.2'
