@@ -24,7 +24,6 @@ Statful client for macOS and iOS written in Objective-C. This client is intended
   s.osx.deployment_target = '10.8'
 
   s.source_files = 'StatfulClient/Classes/**/*.{h,m}'
-  s.public_header_files = 'Pod/Classes/SFClient.h','Pod/Classes/SFConstants.h','Pod/Classes/Logger/SFLogger.h','Pod/Classes/Communication/SFCommunicationProtocol.h'
   
   s.dependency 'CocoaLumberjack', '~> 2.0.0'
   s.dependency 'CocoaAsyncSocket', '~> 7.4.2'

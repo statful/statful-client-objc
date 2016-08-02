@@ -12,7 +12,7 @@ cache: cocoapods
 # - pod install --project-directory=Example
 script:
 - set -o pipefail && xcodebuild test -workspace Example/StatfulClient.xcworkspa$
-- pod lib lint
+- pod lib lint --allow-warnings
 
 notifications:
   email: false

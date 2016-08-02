@@ -27,6 +27,7 @@
 // - Integrate mocks framework for unit tests
 // - Support config load by plist
 // - Add some system stats automatically (Low Priority)
+// - Develop the example app
 
 #import "SFClient.h"
 #import "SFClient+Private.h"
@@ -178,7 +179,7 @@
         aggsWithAggFreq = [NSString stringWithFormat:@" %@%@", aggs, options[@"agg_freq"]];
     }
     
-    NSString *metric = [NSString stringWithFormat:@"%@.%@.%@%@ %@ %lu%@", options[@"namespace"], type, name, tags, value, [options[@"timestamp"] integerValue], aggsWithAggFreq];
+    NSString *metric = [NSString stringWithFormat:@"%@.%@.%@%@ %@ %@%@", options[@"namespace"], type, name, tags, value, options[@"timestamp"], aggsWithAggFreq];
     
     return metric;
 }

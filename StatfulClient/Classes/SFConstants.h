@@ -24,7 +24,7 @@
 #import <Foundation/Foundation.h>
 #import <CocoaLumberjack/CocoaLumberjack.h>
 
-#define CURRENT_TIMESTAMP [NSString stringWithFormat:@"%lu", [@([[NSDate date] timeIntervalSince1970]) integerValue]]
+#define CURRENT_TIMESTAMP [NSString stringWithFormat:@"%ld", (long)[@([[NSDate date] timeIntervalSince1970]) integerValue]]
 
 NS_ASSUME_NONNULL_BEGIN
 

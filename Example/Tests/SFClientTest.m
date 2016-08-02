@@ -45,9 +45,7 @@
     _default_sfc_with_required = [[SFClient alloc] initWithConfig:@{@"transport": @(SFClientTransportUDP)}];
     
     // Custom statful client configuration
-    _sf_config = @{
-                   
-                   @"defaults": @{},
+    _sf_config = @{@"defaults": @{},
                    @"dryrun" : @YES,
                    @"flush_size" : @10,
                    @"flush_interval" : @10,
