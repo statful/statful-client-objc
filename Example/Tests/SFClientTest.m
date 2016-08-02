@@ -374,7 +374,7 @@
 }
 
 -(void)testCurrentTimestamp {
-    NSString* currentTimestamp = [NSString stringWithFormat:@"%lu", [@([[NSDate date] timeIntervalSince1970]) integerValue]];
+    NSString* currentTimestamp = [NSString stringWithFormat:@"%ld", (long)[@([[NSDate date] timeIntervalSince1970]) integerValue]];
     BOOL assertCurrentTimestamp = [currentTimestamp isEqualToString:CURRENT_TIMESTAMP];
     XCTAssert(assertCurrentTimestamp);
 }
