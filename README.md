@@ -331,7 +331,7 @@ Read the reference of methods with options params to know the defaults.
 ```
 
 These method receives a string name, a number value, a dictionary with options and sends a counter/gauge/timer metric with custom options.
-The custom options that can be setted on options param are detailed below.
+The custom options that can be set on options param are detailed below.
 
 | Option | Description | Type | Default for Counter | Default for Gauge | Default for Timer |
 |:---|:---|:---|:---|:---|:---|
