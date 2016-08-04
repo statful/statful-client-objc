@@ -335,7 +335,7 @@ The custom options that can be setted on options param are detailed below.
 
 | Option | Description | Type | Default for Counter | Default for Gauge | Default for Timer |
 |:---|:---|:---|:---|:---|:---|
-| _agg_ | Defines the aggregations to send with metric. It merges with priority with previous defined default per method aggregations on client configuration.<br><br> **Valid Aggregations:** `@"avg", @"count", @"sum", @"first", @"last", @"p90", @"p95", @"min", @"max", @"derivative"` | `NSArray*` | `@[@"avg", @"p90"]` | `@[@"last"]` | `@[@"avg", @"p90", @"count"]` |
+| _agg_ | Defines the aggregations to send with metric. It merges with priority with previous defined default per method aggregations on client configuration.<br><br> **Valid Aggregations:** `@"avg", @"count", @"sum", @"first", @"last", @"p90", @"p95", @"min", @"max"` | `NSArray*` | `@[@"avg", @"p90"]` | `@[@"last"]` | `@[@"avg", @"p90", @"count"]` |
 | _agg_freq_ | Defines the aggregation frequency in **seconds** of the metric. It replaces the previous defined default per method aggregation frequency on client configuration.<br><br> **Valid Aggregation Frequencies:** `@10, @30, @60 ,@120, @180, @300` | `NSNumber*` | `@10` | `@10` | `@10` |
 | _namespace_ | Defines the namespace to send with metric. It replaces the previous defined global namespace on client configuration. | `NSString*` | `@"application"` | `@"application"` | `@"application"` |
 | _tags_ | Defines the tags to send with metric. It merges with priority with previous defined global tags and default per method tags on client configuration. | `NSDictionary*` | `@{}` | `@{}` | `@{@"unit": @"ms"}` |
