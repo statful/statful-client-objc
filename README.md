@@ -288,7 +288,7 @@ The custom options that can be set on config param are detailed below.
 | Option | Description | Type | Default | Required |
 |:---|:---|:---|:---|:---|
 | _app_ | Defines the application global option. If specified sets a global tag `app=settedValue`. | `NSString*` | **none** | **NO** |
-| _defaults_ | Desc 1 | `NSDictionary*` | `@{}` | **NO** |
+| _defaults_ | Defines the global default options per method. | `NSDictionary*` | `@{}` | **NO** |
 | _dryrun_ | Defines if metrics should be outputed to the logger instead of being sent. | `NSNumber*` | `@NO` | **NO** |
 | _flush_interval_ | Defines the periodicity of buffer flush in **miliseconds**. | `NSNumber*` | `@10000` | **NO** |
 | _flush_size_ | Defines the number of metrics that the buffer should have to make a flush. | `NSNumber*` | `@10` | **NO** |
@@ -299,7 +299,7 @@ The custom options that can be set on config param are detailed below.
 | _sample_rate_ | Defines the rate sampling. **Should be a number between [1, 100]**. | `NSNumber*` | `@100` | **NO** |
 | _secure_ | Enable or disable https protocol. | `NSNumber*` | `@"true"` | **NO** |
 | _tags_ | Defines the global tags. | `NSDictionary*` | `@{}` | **NO** |
-| _timeout_ | Defines the timeout for the transport layers. | `NSNumber*` | `@2000` | **NO** |
+| _timeout_ | Defines the timeout for the transport layers in **miliseconds**. | `NSNumber*` | `@2000` | **NO** |
 | _token_ | Defines the token to be used  `SFClientTransportAPI`.  | `NSString*` | **none** | **NO** |
 | _transport_ | Defines the transport layer to be used to send metrics.<br><br> **Valid Transports:** `SFClientTransportAPI, SFClientTransportUDP` | `NSNumber*` | **none** | **YES** |
 
