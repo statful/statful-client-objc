@@ -53,17 +53,13 @@ At this point you only need to include Statful Client into your project to start
 
 ```objc
 #import <StatfulClient/SFClient.h>
-
-//OR
-
-#import "SFClient.h"
 ```
 
 ## Quick Start
 After installing Statful Client you are ready to use it. The quickest way is to do the following:
 
 ```objc
-#import "SFClient.h"
+#import <StatfulClient/SFClient.h>
 
 // Creates a NSDictionary with configuration and pass it to the client
 NSDictionary *clientConfig = @{@"transport":@(SFClientTransportAPI), @"token": @"YOUR_TOKEN_FOR_STATFUL_API"};
